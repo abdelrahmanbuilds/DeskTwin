@@ -1,54 +1,98 @@
 # DeskTwin
 
-DeskTwin connects an Android phone to a Windows PC over your local network. Pair the devices, choose the Windows folders you want to share, and use the companion features.
+DeskTwin is an Android and Windows companion project for working with files and selected PC features over a trusted local network. The Windows PC hosts the service; the Android app pairs with it and connects directly on the LAN.
 
-> **Testing preview:** These downloads are for trying DeskTwin and sharing feedback. The Android APK is a debug build; neither download is a Google Play or production release.
+> **Testing preview:** DeskTwin is an early project for hands-on testing and feedback. The Android download is a debug APK. Neither download is a production or Google Play release.
+
+## Choose what you want to do
+
+| I want to… | Start here |
+| --- | --- |
+| **Try DeskTwin** | Download the ready-to-run Windows ZIP or Android testing APK below. |
+| **Understand the project** | Read [what DeskTwin does](#what-desktwin-does), the [architecture map](docs/ARCHITECTURE.md), and [security and privacy](docs/SECURITY.md). |
+| **Develop or modify it** | Follow the [developer setup](docs/DEVELOPMENT.md), [architecture map](docs/ARCHITECTURE.md), and [contribution guide](CONTRIBUTING.md). |
+| **Report a problem** | Open [Issues](https://github.com/abdelrahmanbuilds/DeskTwin/issues/new/choose) and choose **Bug report**. Include the version, steps, and sanitized diagnostics. |
+| **Suggest an improvement** | Open [Issues](https://github.com/abdelrahmanbuilds/DeskTwin/issues/new/choose) and choose **Feature request**. |
+| **See how builds and previews are made** | Browse [Build workflow runs](https://github.com/abdelrahmanbuilds/DeskTwin/actions/workflows/ci.yml), [Testing preview runs](https://github.com/abdelrahmanbuilds/DeskTwin/actions/workflows/release.yml), and the [workflow source](.github/workflows/). |
 
 ## Download DeskTwin
 
-These are **testing previews** for people who want to try the app. They are not production releases, and the Android APK is not a Google Play release.
+These direct links always point to the files attached to GitHub's latest testing preview. The release page also shows its version, notes, and both files before you download.
 
-| Windows | Android |
+| Windows (64-bit) | Android |
 | --- | --- |
-| [**Download DeskTwin for Windows**](https://github.com/abdelrahmanbuilds/DeskTwin/releases/latest/download/DeskTwin-Windows-win-x64.zip) | [**Download the Android testing APK**](https://github.com/abdelrahmanbuilds/DeskTwin/releases/latest/download/DeskTwin-Android-debug.apk) |
-| Extract the ZIP and double-click `Start-DeskTwin.bat`. The app bundles its runtimes and libraries; no Python or .NET installation is needed. | Open the APK on an Android 8.0 (API 26) or later device and follow Android's install prompts. |
+| [**Download the Windows ZIP**](https://github.com/abdelrahmanbuilds/DeskTwin/releases/latest/download/DeskTwin-Windows-win-x64.zip) | [**Download the Android debug APK**](https://github.com/abdelrahmanbuilds/DeskTwin/releases/latest/download/DeskTwin-Android-debug.apk) |
+| Extract the ZIP, keep its contents together, then double-click `Start-DeskTwin.bat`. The package includes its application runtimes and libraries; installing Python or .NET is not required. | Install on Android 8.0 (API 26) or later. Android may ask you to allow installation from the browser or file manager you used. |
 
-Both devices should be on the same trusted local network. Start DeskTwin on Windows, create a pairing QR code, then scan it in the Android app. Select the Windows folders you want to share; the phone can browse those folders only. DeskTwin does not require a cloud account. The [Windows guide](Windows/README.md#troubleshooting) has help for first launch and connection issues.
+[Open the latest preview page](https://github.com/abdelrahmanbuilds/DeskTwin/releases/latest) · [Browse all preview versions](https://github.com/abdelrahmanbuilds/DeskTwin/releases)
 
-For the security model, see [Security](docs/SECURITY.md). To build from source or contribute, start with [Development guide](docs/DEVELOPMENT.md).
+### First connection
 
-## I want to develop DeskTwin
+1. Put the phone and PC on the same trusted local network.
+2. Start DeskTwin on Windows and create a pairing QR code.
+3. Open DeskTwin on Android and scan the QR code.
+4. Choose the PC folders you want to make available.
 
-Use the source code in this repository, not the packaged Windows ZIP or Android APK. Open [`Android/`](Android/) in Android Studio; Gradle restores the Android development dependencies. For Windows, use the source in [`Windows/`](Windows/) and install the .NET 8 SDK and Python 3.11 or later. The [Development guide](docs/DEVELOPMENT.md) has the setup and build commands.
+Guest Wi-Fi, VPN settings, Windows Firewall rules, or access-point isolation can block device-to-device connections. DeskTwin does not need a cloud account for pairing or local file transfers. See [Windows troubleshooting](Windows/README.md#troubleshooting) if the connection fails.
 
-To propose a change, create a branch and open a pull request. The [Build workflow](.github/workflows/ci.yml) automatically builds the Android debug app and the self-contained Windows testing package. After a change is merged, a version tag starts the [Testing preview workflow](.github/workflows/release.yml), which publishes new Windows and Android downloads. See [how releases are made](docs/RELEASING.md).
+## What DeskTwin does
 
-## See the build and release history
+DeskTwin has two cooperating applications:
 
-- [Build workflow runs](https://github.com/abdelrahmanbuilds/DeskTwin/actions/workflows/ci.yml) — builds Windows and Android on pushes and pull requests.
-- [Testing preview workflow runs](https://github.com/abdelrahmanbuilds/DeskTwin/actions/workflows/release.yml) — builds the downloadable Windows ZIP and Android debug APK for version tags.
-- [Release history and downloads](https://github.com/abdelrahmanbuilds/DeskTwin/releases) — preview notes and attached files, visible before downloading.
-- [Build workflow source](.github/workflows/ci.yml) · [Release workflow source](.github/workflows/release.yml) — the complete automation definitions in this repository.
+- **Windows desktop:** a WinUI 3 interface plus a local Python service. The service exposes the local API, pairing, selected-folder access, transfer, and device features.
+- **Android app:** a Kotlin and Jetpack Compose client. It pairs with the Windows service and provides the phone-side screens and operations.
 
-## Repository layout
+The apps communicate over the local network using HTTPS and WebSockets. Pairing presents a short-lived QR code and pins the Windows TLS certificate fingerprint on Android. The phone can access only the PC folders selected for sharing. Windows can access phone files only after the Android user selects them through Android's Storage Access Framework; that is not unrestricted phone-storage access. See [Security and privacy](docs/SECURITY.md) for the boundaries and caveats.
 
-| Path | Contents |
+## For developers
+
+The downloaded ZIP and APK are testing builds for people trying the app. To change code, start from this repository's source instead:
+
+- **Android:** open [`Android/`](Android/) in Android Studio. The Kotlin source is in [`Android/src/main/java/com/desktwin/app/`](Android/src/main/java/com/desktwin/app/); Gradle restores the declared dependencies.
+- **Windows:** use [`Windows/`](Windows/) source. The WinUI client starts the Python service bridge. Source development needs the .NET 8 SDK and Python 3.11 or later, with packages installed from the requirements files.
+- **Build locally:** follow the step-by-step [Development guide](docs/DEVELOPMENT.md).
+- **Understand module ownership and data flow:** read the [Architecture and source map](docs/ARCHITECTURE.md).
+- **Suggest or contribute a change:** see [CONTRIBUTING.md](CONTRIBUTING.md). A pull request runs the [Build workflow](.github/workflows/ci.yml), which builds Android debug and Windows preview outputs.
+
+## Report a problem or propose an idea
+
+Use [GitHub Issues](https://github.com/abdelrahmanbuilds/DeskTwin/issues/new/choose) for reproducible bugs and feature ideas. The issue form asks for the affected platform and version so reports arrive with useful context. Before opening one, check [existing issues](https://github.com/abdelrahmanbuilds/DeskTwin/issues) and the [troubleshooting guide](Windows/README.md#troubleshooting).
+
+For a bug report, include what you expected, what happened, and the shortest steps that reproduce it. Attach screenshots or diagnostic excerpts only after checking them for personal information. Never post pairing QR codes, access tokens, passwords, private keys, personal files, or unredacted network addresses. Report security vulnerabilities privately to the repository owner; see [Security and privacy](docs/SECURITY.md).
+
+### Finding diagnostics
+
+- **Windows preview:** in DeskTwin, open **Settings → Diagnostics → Open diagnostics folder**. The current service log is `data/logs/desktwin-diagnostics.jsonl` under the extracted application folder. Keep the ZIP's other files beside the launcher.
+- **Android:** open **Settings → Diagnostics log → Share log**. The app shares a snapshot from its private diagnostics log, named `desktwin-diagnostics.log`; the underlying private file is not available through an ordinary file browser. Review the shared text before posting it.
+- **Build failure:** open the failed [GitHub Actions run](https://github.com/abdelrahmanbuilds/DeskTwin/actions) and link to the failing job or step. Do not copy secrets from logs.
+
+## Build, debug, and testing preview lifecycle
+
+| GitHub page | What it contains |
 | --- | --- |
-| Android/ | Kotlin Android app, Gradle build, wrapper, app resources, and font notices |
-| Windows/ | WinUI 3 desktop app, Python service and bridge, dependency lists, and service tests |
-| docs/ | Setup, architecture, development, release, and security guides |
-| .github/workflows/ | Build checks and tag-based release workflow |
+| [Actions → Build](https://github.com/abdelrahmanbuilds/DeskTwin/actions/workflows/ci.yml) | Android debug build and self-contained Windows package build for pushes and pull requests. |
+| [Actions → Testing preview](https://github.com/abdelrahmanbuilds/DeskTwin/actions/workflows/release.yml) | Windows ZIP and Android debug APK build, then upload as assets when a `v*` tag is pushed. |
+| [Releases](https://github.com/abdelrahmanbuilds/DeskTwin/releases) | Version notes and the ready-to-download Windows ZIP and Android APK. |
+| [Build workflow source](.github/workflows/ci.yml) · [Preview workflow source](.github/workflows/release.yml) | Exact automation definitions, including build commands and artifact names. |
 
-## Build status and releases
+The Windows ZIP is intended to start from its extracted folder without a user-installed Python or .NET runtime. The Android APK is signed with a temporary debug key on the build runner. A later APK can have a different signing identity, so Android may require uninstalling an earlier preview before installing it; uninstalling removes that app's data. These artifacts are for testing and feedback, not a store publishing channel.
 
-Pushes and pull requests build the Android debug variant and Windows app. Creating a v-prefixed tag publishes a clearly labeled testing preview with a Windows package and an Android debug APK. GitHub marks the newest preview as its latest release so the download links above stay current. “Latest” here describes GitHub's download link; the build is still for testing, not Google Play or production use.
+## Repository map
 
-The Android debug APK is signed with a temporary debug key generated by the GitHub Actions runner. Installing a later preview may require uninstalling the previous preview first, which removes its local app data. See docs/RELEASING.md.
+| Path | Purpose |
+| --- | --- |
+| [`Android/`](Android/) | Android Gradle project, build configuration, wrapper, and app resources. |
+| [`Android/src/main/java/com/desktwin/app/`](Android/src/main/java/com/desktwin/app/) | Android Kotlin app source. The Gradle app module points here explicitly. |
+| [`Windows/WinUI/app/`](Windows/WinUI/app/) | WinUI 3 desktop shell, pages, and bridge client. |
+| [`Windows/WinUI/bridge/`](Windows/WinUI/bridge/) | Python host started by the WinUI desktop process. |
+| [`Windows/Python/service/`](Windows/Python/service/) | Local API, pairing/security, selected-folder storage, transfer, discovery, and sync modules. |
+| [`Windows/Python/ui/`](Windows/Python/ui/) | Legacy Python GUI kept in source; it is separate from the WinUI interface used by the Windows preview package. |
+| [`Windows/scripts/Build-Release.ps1`](Windows/scripts/Build-Release.ps1) | Builds and stages the self-contained Windows testing ZIP. |
+| [`.github/workflows/`](.github/workflows/) | Continuous build and tag-driven preview automation. |
+| [`docs/`](docs/) | Architecture, development, release, and security guides. |
 
-## Project status
+The source tree is intentionally not a line-by-line tutorial. The [Architecture and source map](docs/ARCHITECTURE.md) describes the job and extension point of each major module; start there before editing across platforms.
 
-This repository documents and builds the current source tree. Preview artifacts are generated by GitHub Actions; APKs and Windows packages are not committed to the source tree. Hardware/device behavior still depends on the Windows network, firewall, Android version, and device-specific media support.
+## Project status and reuse
 
-## License
-
-No license has been selected for DeskTwin's application source. Until a root LICENSE file is added, the source is not granted for reuse, redistribution, or modification. Third-party asset notices are in Android/licenses/.
+DeskTwin is an evolving testing project. Device behavior may vary with Windows networking/firewall settings, Android versions, and media support. No root application license has been selected yet. Until a root `LICENSE` is added, do not assume the source is licensed for reuse, redistribution, or modification. Third-party font notices are in [`Android/licenses/fonts/`](Android/licenses/fonts/).

@@ -1,0 +1,51 @@
+name: Feature request
+description: Suggest a specific improvement to DeskTwin.
+title: "[Feature]: "
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: >-
+        Start with the user need. For security-sensitive ideas, contact the maintainer privately instead of posting sensitive details here.
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Android
+        - Windows desktop
+        - Windows service
+        - Pairing or local network
+        - Documentation or onboarding
+        - Build or release workflow
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem should this solve?
+      description: Describe who is affected and what is difficult today.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What would you like to happen?
+      description: Give a concrete example of the intended user flow.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives or context
+      description: Mention other approaches you considered or related issues.
+    validations:
+      required: false
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submitting
+      options:
+        - label: I checked for a similar request in existing issues.
+          required: true
