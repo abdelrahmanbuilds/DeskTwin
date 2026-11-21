@@ -59,19 +59,19 @@ fun EntryContextMenuSheet(
 
             HorizontalDivider(color = MaterialTheme.colorScheme.outline)
 
-            MenuOption(Icons.AutoMirrored.Filled.OpenInNew, if (entry.is_folder) "افتح" else "افتح مؤقتًا", onOpenClick)
-            MenuOption(Icons.Default.Info, "المعلومات", onInfoClick)
+            MenuOption(Icons.AutoMirrored.Filled.OpenInNew, if (entry.is_folder) tr("افتح", "Open") else tr("افتح مؤقتًا", "Open temporarily"), onOpenClick)
+            MenuOption(Icons.Default.Info, tr("المعلومات", "Details"), onInfoClick)
 
             if (!entry.is_folder) {
-                MenuOption(Icons.Default.CloudDownload, "نزّله دايمًا على التليفون", onDownloadClick)
+                MenuOption(Icons.Default.CloudDownload, tr("نزّله دايمًا على التليفون", "Keep on phone"), onDownloadClick)
             } else {
-                MenuOption(Icons.Default.Upload, "ارفع ملف هنا", onUploadHereClick)
+                MenuOption(Icons.Default.Upload, tr("ارفع ملف هنا", "Upload here"), onUploadHereClick)
             }
-            MenuOption(Icons.Default.ContentCopy, "نسخ", onCopyClick)
-            MenuOption(Icons.Default.ContentCut, "قص", onCutClick)
+            MenuOption(Icons.Default.ContentCopy, tr("نسخ", "Copy"), onCopyClick)
+            MenuOption(Icons.Default.ContentCut, tr("قص", "Cut"), onCutClick)
 
-            MenuOption(Icons.Default.Edit, "إعادة تسمية", { showRenameDialog = true })
-            MenuOption(Icons.Default.Delete, "حذف", onDeleteClick, tint = ErrorRed)
+            MenuOption(Icons.Default.Edit, tr("إعادة تسمية", "Rename"), { showRenameDialog = true })
+            MenuOption(Icons.Default.Delete, tr("حذف", "Delete"), onDeleteClick, tint = ErrorRed)
         }
     }
 
@@ -103,15 +103,15 @@ private fun RenameDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("إعادة تسمية") },
+        title = { Text(tr("إعادة تسمية", "Rename")) },
         text = {
             Column {
-                Text("الاسم الحالي: $currentName", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(tr("الاسم الحالي: $currentName", "Current name: $currentName"), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Spacer(modifier = Modifier.height(12.dp))
                 OutlinedTextField(
                     value = newName,
                     onValueChange = { newName = it },
-                    label = { Text("الاسم الجديد") },
+                    label = { Text(tr("الاسم الجديد", "New name")) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -119,11 +119,11 @@ private fun RenameDialog(
         },
         confirmButton = {
             TextButton(onClick = { onConfirm(newName) }, enabled = isValid) {
-                Text("تأكيد")
+                Text(tr("تأكيد", "Confirm"))
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("إلغاء") }
+            TextButton(onClick = onDismiss) { Text(tr("إلغاء", "Cancel")) }
         }
     )
 }

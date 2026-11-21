@@ -263,7 +263,7 @@ public sealed class PhoneFilesPage : Page
         }
         catch (Exception ex)
         {
-            var message = WinUIStrings.Translate("تعذر تحميل ملفات الهاتف: ", "Could not load phone files: ") + ex.Message;
+            var message = WinUIStrings.Translate("تعذر تحميل ملفات الهاتف: ", "Could not load phone files: ") + WinUIStrings.SafeMessage(ex.Message, "راجع سجل التشخيص لمزيد من التفاصيل.", "See diagnostics for details.");
             RenderEntries();
             _status.Text = message;
         }
@@ -369,7 +369,7 @@ public sealed class PhoneFilesPage : Page
                 ? WinUIStrings.Translate("أُرسل طلب إلغاء النقل للهاتف.", "Transfer cancellation requested from the phone.")
                 : WinUIStrings.Translate("النقل لم يعد نشطًا.", "The transfer is no longer active.");
         }
-        catch (Exception ex) { _status.Text = WinUIStrings.Translate("تعذر إلغاء النقل: ", "Could not cancel the transfer: ") + ex.Message; }
+        catch (Exception ex) { _status.Text = WinUIStrings.Translate("تعذر إلغاء النقل: ", "Could not cancel the transfer: ") + WinUIStrings.SafeMessage(ex.Message, "راجع سجل التشخيص لمزيد من التفاصيل.", "See diagnostics for details."); }
         finally { await RefreshActiveTransfersAsync(); }
     }
 
@@ -486,7 +486,7 @@ public sealed class PhoneFilesPage : Page
         }
         catch (Exception ex)
         {
-            _status.Text = WinUIStrings.Translate("تعذر تحميل الصفحة التالية: ", "Could not load the next page: ") + ex.Message;
+            _status.Text = WinUIStrings.Translate("تعذر تحميل الصفحة التالية: ", "Could not load the next page: ") + WinUIStrings.SafeMessage(ex.Message, "راجع سجل التشخيص لمزيد من التفاصيل.", "See diagnostics for details.");
         }
         finally { _busy = false; }
     }
@@ -520,7 +520,7 @@ public sealed class PhoneFilesPage : Page
             }
             _status.Text = WinUIStrings.Translate($"في السلة {items?.Count ?? 0} عنصر", $"{items?.Count ?? 0} items in trash");
         }
-        catch (Exception ex) { _status.Text = WinUIStrings.Translate("تعذر تحميل سلة الهاتف: ", "Could not load phone trash: ") + ex.Message; }
+        catch (Exception ex) { _status.Text = WinUIStrings.Translate("تعذر تحميل سلة الهاتف: ", "Could not load phone trash: ") + WinUIStrings.SafeMessage(ex.Message, "راجع سجل التشخيص لمزيد من التفاصيل.", "See diagnostics for details."); }
         finally { _busy = false; }
     }
 
@@ -569,7 +569,7 @@ public sealed class PhoneFilesPage : Page
             _operationBusy = false;
             await ShowTrashAsync();
         }
-        catch (Exception ex) { _status.Text = WinUIStrings.Translate("تعذر تنفيذ العملية: ", "Could not complete the operation: ") + ex.Message; }
+        catch (Exception ex) { _status.Text = WinUIStrings.Translate("تعذر تنفيذ العملية: ", "Could not complete the operation: ") + WinUIStrings.SafeMessage(ex.Message, "راجع سجل التشخيص لمزيد من التفاصيل.", "See diagnostics for details."); }
         finally { _operationBusy = false; }
     }
 
@@ -706,7 +706,7 @@ public sealed class PhoneFilesPage : Page
         }
         catch (Exception ex)
         {
-            _status.Text = WinUIStrings.Translate("تعذرت المعاينة: ", "Could not preview media: ") + ex.Message;
+            _status.Text = WinUIStrings.Translate("تعذرت المعاينة: ", "Could not preview media: ") + WinUIStrings.SafeMessage(ex.Message, "راجع سجل التشخيص لمزيد من التفاصيل.", "See diagnostics for details.");
         }
     }
 
@@ -752,7 +752,7 @@ public sealed class PhoneFilesPage : Page
             Process.Start(new ProcessStartInfo(destination.Path) { UseShellExecute = true });
             _status.Text = WinUIStrings.Translate($"تم فتح نسخة من الهاتف: {destination.Path}", $"Opened a copy from the phone: {destination.Path}");
         }
-        catch (Exception ex) { _status.Text = WinUIStrings.Translate("تعذر فتح الملف: ", "Could not open the file: ") + ex.Message; }
+        catch (Exception ex) { _status.Text = WinUIStrings.Translate("تعذر فتح الملف: ", "Could not open the file: ") + WinUIStrings.SafeMessage(ex.Message, "راجع سجل التشخيص لمزيد من التفاصيل.", "See diagnostics for details."); }
         finally { _operationBusy = false; }
     }
 
@@ -783,7 +783,7 @@ public sealed class PhoneFilesPage : Page
             File.Copy(localPath, destination, overwrite: false);
             _status.Text = WinUIStrings.Translate($"تم حفظ الملف: {destination}", $"File saved: {destination}");
         }
-        catch (Exception ex) { _status.Text = WinUIStrings.Translate("تعذر تنزيل الملف: ", "Could not download the file: ") + ex.Message; }
+        catch (Exception ex) { _status.Text = WinUIStrings.Translate("تعذر تنزيل الملف: ", "Could not download the file: ") + WinUIStrings.SafeMessage(ex.Message, "راجع سجل التشخيص لمزيد من التفاصيل.", "See diagnostics for details."); }
         finally { _operationBusy = false; }
     }
 
@@ -798,7 +798,7 @@ public sealed class PhoneFilesPage : Page
             var files = await picker.PickMultipleFilesAsync();
             await UploadFilesAsync(files, operationStarted: true);
         }
-        catch (Exception ex) { _status.Text = WinUIStrings.Translate("تعذر إرسال الملف: ", "Could not send the file: ") + ex.Message; }
+        catch (Exception ex) { _status.Text = WinUIStrings.Translate("تعذر إرسال الملف: ", "Could not send the file: ") + WinUIStrings.SafeMessage(ex.Message, "راجع سجل التشخيص لمزيد من التفاصيل.", "See diagnostics for details."); }
         finally { _operationBusy = false; }
     }
 
@@ -823,7 +823,7 @@ public sealed class PhoneFilesPage : Page
                 $"Sent {files.Count} file(s) to the phone.");
             await LoadAsync(_path.Text, operationReload: true);
         }
-        catch (Exception ex) { _status.Text = WinUIStrings.Translate("تعذر إرسال الملفات: ", "Could not send files: ") + ex.Message; }
+        catch (Exception ex) { _status.Text = WinUIStrings.Translate("تعذر إرسال الملفات: ", "Could not send files: ") + WinUIStrings.SafeMessage(ex.Message, "راجع سجل التشخيص لمزيد من التفاصيل.", "See diagnostics for details."); }
         finally { _operationBusy = false; }
     }
 
@@ -841,7 +841,7 @@ public sealed class PhoneFilesPage : Page
             _status.Text = WinUIStrings.Translate("تم النسخ.", "Copied.");
             await LoadAsync(_path.Text, operationReload: true);
         }
-        catch (Exception ex) { _status.Text = WinUIStrings.Translate("تعذر نسخ العنصر: ", "Could not copy the item: ") + ex.Message; }
+        catch (Exception ex) { _status.Text = WinUIStrings.Translate("تعذر نسخ العنصر: ", "Could not copy the item: ") + WinUIStrings.SafeMessage(ex.Message, "راجع سجل التشخيص لمزيد من التفاصيل.", "See diagnostics for details."); }
         finally { _operationBusy = false; }
     }
 
@@ -857,7 +857,7 @@ public sealed class PhoneFilesPage : Page
             if (result?["success"]?.GetValue<bool>() != true) throw new InvalidOperationException(result?["error"]?.GetValue<string>() ?? WinUIStrings.Translate("فشلت إعادة التسمية.", "Rename failed."));
             await LoadAsync(_path.Text, operationReload: true);
         }
-        catch (Exception ex) { _status.Text = WinUIStrings.Translate("تعذرت إعادة التسمية: ", "Could not rename: ") + ex.Message; }
+        catch (Exception ex) { _status.Text = WinUIStrings.Translate("تعذرت إعادة التسمية: ", "Could not rename: ") + WinUIStrings.SafeMessage(ex.Message, "راجع سجل التشخيص لمزيد من التفاصيل.", "See diagnostics for details."); }
         finally { _operationBusy = false; }
     }
 
@@ -872,7 +872,7 @@ public sealed class PhoneFilesPage : Page
             if (result?["success"]?.GetValue<bool>() != true) throw new InvalidOperationException(result?["error"]?.GetValue<string>() ?? WinUIStrings.Translate("فشل الحذف.", "Delete failed."));
             await LoadAsync(_path.Text, operationReload: true);
         }
-        catch (Exception ex) { _status.Text = WinUIStrings.Translate("تعذر حذف العنصر: ", "Could not delete the item: ") + ex.Message; }
+        catch (Exception ex) { _status.Text = WinUIStrings.Translate("تعذر حذف العنصر: ", "Could not delete the item: ") + WinUIStrings.SafeMessage(ex.Message, "راجع سجل التشخيص لمزيد من التفاصيل.", "See diagnostics for details."); }
         finally { _operationBusy = false; }
     }
 

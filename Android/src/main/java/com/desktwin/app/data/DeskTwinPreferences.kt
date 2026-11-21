@@ -47,7 +47,7 @@ class DeskTwinPreferences(private val context: Context) {
         }.toMap()
     }
     val reduceMotion: Flow<Boolean> = context.deskTwinPrefs.data.map { it[REDUCE_MOTION] ?: false }
-    val language: Flow<String> = context.deskTwinPrefs.data.map { it[LANGUAGE] ?: "ar" }
+    val language: Flow<String> = context.deskTwinPrefs.data.map { it[LANGUAGE] ?: "en" }
     val introVideoUri: Flow<String?> = context.deskTwinPrefs.data.map { it[INTRO_VIDEO_URI] }
     val introMode: Flow<String> = context.deskTwinPrefs.data.map { it[INTRO_MODE] ?: "auto" }
     val fileViewMode: Flow<String> = context.deskTwinPrefs.data.map { it[FILE_VIEW_MODE] ?: "list" }

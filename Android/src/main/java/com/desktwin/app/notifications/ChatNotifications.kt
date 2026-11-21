@@ -15,16 +15,20 @@ import com.desktwin.app.MainActivity
 object ChatNotifications {
     private const val CHANNEL_ID = "desktwin_chat"
 
-    fun ensureChannel(context: Context) {
+    fun ensureChannel(context: Context, language: String = "en") {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
-                CHANNEL_ID, "رسائل DeskTwin", NotificationManager.IMPORTANCE_DEFAULT
-            ).apply { description = "رسائل جديدة بين الهاتف والكمبيوتر" }
+                CHANNEL_ID,
+                if (language == "ar") "رسائل DeskTwin" else "DeskTwin messages",
+                NotificationManager.IMPORTANCE_DEFAULT
+            ).apply {
+                description = if (language == "ar") "رسائل جديدة بين الهاتف والكمبيوتر" else "New messages between your phone and computer"
+            }
             context.getSystemService(NotificationManager::class.java).createNotificationChannel(channel)
         }
     }
 
-    fun showIncoming(context: Context, sender: String, message: String, messageId: String) {
+    fun showIncoming(context: Context, sender: String, message: String, messageId: String, language: String = "en") {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
             context.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
         ) return
@@ -38,7 +42,7 @@ object ChatNotifications {
         )
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(android.R.drawable.stat_notify_chat)
-            .setContentTitle("رسالة جديدة من $sender")
+            .setContentTitle(if (language == "ar") "رسالة جديدة من $sender" else "New message from $sender")
             .setContentText(message.replace('\n', ' ').take(160))
             .setStyle(NotificationCompat.BigTextStyle().bigText(message.take(1000)))
             .setContentIntent(pendingIntent)

@@ -22,7 +22,7 @@ public partial class App : Application
         _instanceMutex = new Mutex(initiallyOwned: true, name: @"Local\DeskTwin.WinUI.SingleInstance", createdNew: out var isFirstInstance);
         if (!isFirstInstance)
         {
-            MessageBoxW(IntPtr.Zero, "DeskTwin WinUI مفتوح بالفعل. استخدم النافذة الحالية لتجنب تشغيل خدمتين على المنفذ نفسه.", "DeskTwin", 0x40);
+            MessageBoxW(IntPtr.Zero, WinUIStrings.Translate("DeskTwin مفتوح بالفعل. استخدم النافذة الحالية لتجنب تشغيل خدمتين على المنفذ نفسه.", "DeskTwin is already open. Use the current window to avoid starting a second service on the same port."), "DeskTwin", 0x40);
             Exit();
             return;
         }

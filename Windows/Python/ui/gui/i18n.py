@@ -85,5 +85,5 @@ COPY = {
     },
 }
 
-def t(key: str, language: str = "ar") -> str:
-    return COPY.get(language, COPY["ar"]).get(key, key)
+def t(key: str, language: str = "en") -> str:
+    return COPY.get(language, COPY["en"]).get(key, key)

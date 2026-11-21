@@ -71,9 +71,9 @@ fun UploadScreen(
             verticalAlignment = Alignment.CenterVertically
         ) {
             IconButton(onClick = onBackClick) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "رجوع")
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = tr("رجوع", "Back"))
             }
-            Text("إرسال ملف للكمبيوتر", style = MaterialTheme.typography.titleMedium)
+            Text(tr("إرسال ملف للكمبيوتر", "Send files to computer"), style = MaterialTheme.typography.titleMedium)
         }
 
         BoxWithConstraints(modifier = Modifier.fillMaxWidth().weight(1f)) {
@@ -99,7 +99,7 @@ fun UploadScreen(
                     Icon(Icons.Default.Folder, contentDescription = null, tint = WarningOrange)
                     Spacer(modifier = Modifier.width(10.dp))
                     Column(modifier = Modifier.weight(1f)) {
-                        Text("هيتحفظ في", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(tr("هيتحفظ في", "Save to"), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         Text(targetFolderLabel, style = MaterialTheme.typography.bodyLarge)
                     }
                     Icon(Icons.Default.ChevronRight, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -108,14 +108,14 @@ fun UploadScreen(
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            Text("اختار ملف من تخزين التليفون:", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+            Text(tr("اختار ملف من تخزين التليفون:", "Choose a file from phone storage:"), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
             Spacer(modifier = Modifier.height(10.dp))
 
             // خيار 1: انسخ واحتفظ بنسخة في التليفون كمان
             UploadOptionCard(
                 icon = Icons.Default.ContentCopy,
-                title = "انسخ للكمبيوتر واحتفظ بالملف عندي",
-                subtitle = "الملف هيفضل موجود على التليفون زي ما هو",
+                title = tr("انسخ للكمبيوتر واحتفظ بالملف عندي", "Copy to computer and keep on phone"),
+                subtitle = tr("الملف هيفضل موجود على التليفون زي ما هو", "Keep the original file on the phone."),
                 onClick = { onPickFileClick(UploadMode.COPY_KEEP_BOTH) }
             )
 
@@ -124,23 +124,23 @@ fun UploadScreen(
             // خيار 2: انقل (احذف من التليفون بعد الرفع، حوّله metadata)
             UploadOptionCard(
                 icon = Icons.AutoMirrored.Filled.DriveFileMove,
-                title = "انقل للكمبيوتر وفضّي مساحة عندي",
-                subtitle = "بعد الرفع، هيتحول لمعلومات بس على التليفون - مساحته الحقيقية هتتفضى",
+                title = tr("انقل للكمبيوتر وفضّي مساحة عندي", "Move to computer and free phone storage"),
+                subtitle = tr("بعد الرفع، هيتحول لمعلومات بس على التليفون - مساحته الحقيقية هتتفضى", "After upload, keep file details on the phone and remove its local copy."),
                 onClick = { onPickFileClick(UploadMode.COPY_AND_DELETE) }
             )
 
             Spacer(modifier = Modifier.height(10.dp))
             UploadOptionCard(
                 icon = Icons.Default.Wallpaper,
-                title = "ارفع الصورة وعيّنها خلفية",
-                subtitle = "ترفع للكمبيوتر ثم تصبح خلفية سطح المكتب تلقائيًا",
+                title = tr("ارفع الصورة وعيّنها خلفية", "Upload image and set as wallpaper"),
+                subtitle = tr("ترفع للكمبيوتر ثم تصبح خلفية سطح المكتب تلقائيًا", "Upload it to the computer and set it as the desktop wallpaper."),
                 onClick = { onPickFileClick(UploadMode.SET_AS_WALLPAPER) }
             )
 
             DeskTwinVisibility(visible = pendingUploads.isNotEmpty()) {
                 Spacer(modifier = Modifier.height(24.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text("مركز النقل", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+                    Text(tr("مركز النقل", "Transfer queue"), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
                     Spacer(modifier = Modifier.width(8.dp))
                     Surface(
                         shape = RoundedCornerShape(50),
@@ -169,9 +169,9 @@ fun UploadScreen(
 @Composable
 private fun ConnectionBanner(isConnected: Boolean) {
     val (bgColor, icon, message) = if (isConnected) {
-        Triple(SuccessGreen.copy(alpha = 0.1f), Icons.Default.CheckCircle, "الكمبيوتر متصل - الملف هيترفع فورًا")
+        Triple(SuccessGreen.copy(alpha = 0.1f), Icons.Default.CheckCircle, tr("الكمبيوتر متصل - الملف هيترفع فورًا", "Computer connected — the file will upload now."))
     } else {
-        Triple(WarningOrange.copy(alpha = 0.1f), Icons.Default.Schedule, "الكمبيوتر مش متصل دلوقتي - الملف هيترفع تلقائيًا أول ما تتصل بنفس شبكته")
+        Triple(WarningOrange.copy(alpha = 0.1f), Icons.Default.Schedule, tr("الكمبيوتر مش متصل دلوقتي - الملف هيترفع تلقائيًا أول ما تتصل بنفس شبكته", "Computer is offline — the file will upload automatically when it reconnects to the same network."))
     }
 
     Surface(shape = RoundedCornerShape(10.dp), color = bgColor, modifier = Modifier.fillMaxWidth()) {
@@ -224,11 +224,11 @@ private fun PendingUploadRow(upload: PendingUpload, onTogglePause: (String) -> U
                     UploadStatus.FAILED -> Icon(Icons.Default.Error, contentDescription = null, tint = ErrorRed)
                 }
                 if (upload.status == UploadStatus.UPLOADING || upload.paused) {
-                    TextButton(onClick = { onTogglePause(upload.fileName) }) { Text(if (upload.paused) "استكمال" else "إيقاف") }
+                    TextButton(onClick = { onTogglePause(upload.fileName) }) { Text(if (upload.paused) tr("استكمال", "Resume") else tr("إيقاف", "Pause")) }
                 }
             }
             if (upload.status == UploadStatus.UPLOADING) {
-                Text("التقدم: ${(displayedProgress * 100).toInt()}%", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
+                Text(tr("التقدم: ${(displayedProgress * 100).toInt()}%", "Progress: ${(displayedProgress * 100).toInt()}%"), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
                 LinearProgressIndicator(
                     progress = { displayedProgress },
                     modifier = Modifier.fillMaxWidth().padding(top = 6.dp)
@@ -243,10 +243,11 @@ private fun PendingUploadRow(upload: PendingUpload, onTogglePause: (String) -> U
     }
 }
 
+@Composable
 private fun statusLabel(status: UploadStatus): String = when (status) {
-    UploadStatus.WAITING_FOR_CONNECTION -> "مستني اتصال بالكمبيوتر"
-    UploadStatus.UPLOADING -> "بيترفع دلوقتي..."
-    UploadStatus.WAITING_APPROVAL -> "مستني موافقتك على الاستبدال في الكمبيوتر"
-    UploadStatus.DONE -> "اترفع بنجاح"
-    UploadStatus.FAILED -> "فشل - هيتعاد المحاولة"
+    UploadStatus.WAITING_FOR_CONNECTION -> tr("مستني اتصال بالكمبيوتر", "Waiting for computer")
+    UploadStatus.UPLOADING -> tr("بيترفع دلوقتي...", "Uploading…")
+    UploadStatus.WAITING_APPROVAL -> tr("مستني موافقتك على الاستبدال في الكمبيوتر", "Waiting for replacement approval on computer")
+    UploadStatus.DONE -> tr("اترفع بنجاح", "Uploaded successfully")
+    UploadStatus.FAILED -> tr("فشل - هيتعاد المحاولة", "Failed — will retry")
 }

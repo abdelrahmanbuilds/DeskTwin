@@ -245,7 +245,7 @@ public sealed class SettingsPage : Page
             var values = await _bridge.CallAsync("get_settings") as System.Text.Json.Nodes.JsonObject;
             if (values is null)
                 throw new InvalidOperationException(WinUIStrings.Translate("تعذر تحميل الإعدادات.", "Could not load settings."));
-            var language = values["language"]?.GetValue<string>() ?? "ar";
+            var language = values["language"]?.GetValue<string>() ?? "en";
             var introMode = values["intro_mode"]?.GetValue<string>() ?? "auto";
             var activityLimit = values["activity_log_limit"]?.GetValue<int>() ?? 300;
             var transferRetention = values["incomplete_transfer_retention_hours"]?.GetValue<int>() ?? 24;
@@ -283,7 +283,7 @@ public sealed class SettingsPage : Page
                 ? WinUIStrings.Translate("سطح المكتب (افتراضي)", "Desktop (default)")
                 : values["command_draft_directory"]!.GetValue<string>();
             _commandRequestExportDirectory.Text = string.IsNullOrWhiteSpace(values["command_request_export_directory"]?.GetValue<string>())
-                ? "اختيار المسار عند كل حفظ"
+                ? WinUIStrings.Translate("اختيار المسار عند كل حفظ", "Choose a location each time")
                 : values["command_request_export_directory"]!.GetValue<string>();
             _useDefaultCommandRequestExportDirectory.IsOn = values["use_default_command_request_export_directory"]?.GetValue<bool>() ?? false;
             _applyTheme(theme);
@@ -291,7 +291,7 @@ public sealed class SettingsPage : Page
         }
         catch (Exception ex)
         {
-            _status.Text = WinUIStrings.Translate("تعذر تحميل الإعدادات: ", "Could not load settings: ") + ex.Message;
+            _status.Text = WinUIStrings.Translate("تعذر تحميل الإعدادات: ", "Could not load settings: ") + WinUIStrings.SafeMessage(ex.Message, "راجع سجل التشخيص لمزيد من التفاصيل.", "See diagnostics for details.");
         }
         finally
         {
@@ -313,7 +313,7 @@ public sealed class SettingsPage : Page
         }
         catch (Exception ex)
         {
-            _boundUser.Text = WinUIStrings.Translate("تعذر تحميل المستخدم المرتبط: ", "Could not load the linked user: ") + ex.Message;
+            _boundUser.Text = WinUIStrings.Translate("تعذر تحميل المستخدم المرتبط: ", "Could not load the linked user: ") + WinUIStrings.SafeMessage(ex.Message, "راجع سجل التشخيص لمزيد من التفاصيل.", "See diagnostics for details.");
         }
     }
 
@@ -364,7 +364,7 @@ public sealed class SettingsPage : Page
         }
         catch (Exception ex)
         {
-            _status.Text = WinUIStrings.Translate("تعذر تشغيل الفيديو: ", "Could not play the video: ") + ex.Message;
+            _status.Text = WinUIStrings.Translate("تعذر تشغيل الفيديو: ", "Could not play the video: ") + WinUIStrings.SafeMessage(ex.Message, "راجع سجل التشخيص لمزيد من التفاصيل.", "See diagnostics for details.");
         }
     }
 
@@ -413,7 +413,7 @@ public sealed class SettingsPage : Page
             if (_useDefaultCommandRequestExportDirectory.IsOn) return;
         }
         if (await SaveAsync("command_request_export_directory", ""))
-            _commandRequestExportDirectory.Text = "اختيار المسار عند كل حفظ";
+            _commandRequestExportDirectory.Text = WinUIStrings.Translate("اختيار المسار عند كل حفظ", "Choose a location each time");
     }
 
     private void OpenDiagnosticsFolder()
@@ -426,7 +426,7 @@ public sealed class SettingsPage : Page
         }
         catch (Exception ex)
         {
-            _status.Text = WinUIStrings.Translate("تعذر فتح مجلد التشخيص: ", "Could not open the diagnostics folder: ") + ex.Message;
+            _status.Text = WinUIStrings.Translate("تعذر فتح مجلد التشخيص: ", "Could not open the diagnostics folder: ") + WinUIStrings.SafeMessage(ex.Message, "راجع سجل التشخيص لمزيد من التفاصيل.", "See diagnostics for details.");
         }
     }
 
@@ -454,7 +454,7 @@ public sealed class SettingsPage : Page
         }
         catch (Exception ex)
         {
-            _status.Text = WinUIStrings.Translate("تعذر حفظ الإعداد: ", "Could not save the setting: ") + ex.Message;
+            _status.Text = WinUIStrings.Translate("تعذر حفظ الإعداد: ", "Could not save the setting: ") + WinUIStrings.SafeMessage(ex.Message, "راجع سجل التشخيص لمزيد من التفاصيل.", "See diagnostics for details.");
             return false;
         }
         finally { _savingSettings.Remove(key); }

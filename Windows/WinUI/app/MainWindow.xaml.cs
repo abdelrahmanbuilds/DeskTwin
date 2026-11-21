@@ -30,7 +30,7 @@ public sealed partial class MainWindow : Window
     private readonly TaskbarTrayIcon _trayIcon;
     private readonly DispatcherTimer _refreshTimer = new() { Interval = TimeSpan.FromSeconds(5) };
     private ElementTheme _currentTheme = ElementTheme.Dark;
-    private string _currentLanguage = "ar";
+    private string _currentLanguage = "en";
     private string _activePage = "dashboard";
     private readonly List<string> _navigationHistory = new() { "dashboard" };
     private int _pendingApprovalsCount;
@@ -151,15 +151,15 @@ public sealed partial class MainWindow : Window
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(3));
             settings = await _bridge.CallAsync("get_settings", cancellationToken: timeout.Token) as JsonObject;
             ApplyTheme(settings?["theme_mode"]?.GetValue<string>() == "light" ? ElementTheme.Light : ElementTheme.Dark);
-            ApplyLanguage(settings?["language"]?.GetValue<string>() ?? "ar", refreshPage: false);
+            ApplyLanguage(settings?["language"]?.GetValue<string>() ?? "en", refreshPage: false);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             // Keep the Python default (dark) if settings cannot be read; never
             // expose light surfaces with dark-theme white text at first launch.
             ApplyTheme(ElementTheme.Dark);
-            ApplyLanguage("ar", refreshPage: false);
-            FooterText.Text = $"تعذر تحميل تفضيلات المظهر؛ استُخدم الداكن مؤقتًا: {ex.Message}";
+            ApplyLanguage("en", refreshPage: false);
+            FooterText.Text = WinUIStrings.Translate("تعذر تحميل تفضيلات الواجهة؛ سنستخدم الإعداد الافتراضي الآن.", "Could not load appearance preferences; using the defaults for now.");
         }
 
         var width = Math.Clamp(settings?["window_width"]?.GetValue<int>() ?? 1180, 880, 5000);
@@ -259,9 +259,9 @@ public sealed partial class MainWindow : Window
             };
             await dialog.ShowAsync();
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            FooterText.Text = WinUIStrings.Translate($"تعذر حفظ اللقطة: {ex.Message}", $"Screenshot failed: {ex.Message}");
+            FooterText.Text = WinUIStrings.Translate("تعذر حفظ اللقطة. راجع سجل التشخيص لمزيد من التفاصيل.", "Screenshot failed. See diagnostics for details.");
         }
         finally
         {
@@ -375,7 +375,7 @@ public sealed partial class MainWindow : Window
 
     private void ApplyLanguage(string language, bool refreshPage)
     {
-        var normalized = language == "en" ? "en" : "ar";
+        var normalized = language == "ar" ? "ar" : "en";
         var changed = _currentLanguage != normalized;
         _currentLanguage = normalized;
         WinUIStrings.Language = normalized;
@@ -496,12 +496,12 @@ public sealed partial class MainWindow : Window
             if (string.IsNullOrWhiteSpace(path)) return;
             if (!File.Exists(path))
             {
-                FooterText.Text = "فيديو المقدمة المحدد غير موجود؛ اختر فيديو آخر من الإعدادات.";
+                FooterText.Text = WinUIStrings.Translate("فيديو المقدمة المحدد غير موجود؛ اختر فيديو آخر من الإعدادات.", "The selected intro video is missing. Choose another video in Settings.");
                 return;
             }
             await PlayIntroVideoAsync(path);
         }
-        catch (Exception ex) { FooterText.Text = $"تعذر تشغيل مقدمة الفيديو: {ex.Message}"; }
+        catch (Exception ex) { FooterText.Text = WinUIStrings.Translate("تعذر تشغيل مقدمة الفيديو: ", "Could not play the intro video: ") + WinUIStrings.SafeMessage(ex.Message, "تحقق من ملف الفيديو ثم حاول مرة أخرى.", "Check the video file and try again."); }
     }
 
     public async Task PlayIntroVideoAsync(string path)
@@ -534,7 +534,7 @@ public sealed partial class MainWindow : Window
         });
         player.MediaFailed += (_, error) => DispatcherQueue.TryEnqueue(() =>
         {
-            FooterText.Text = $"تعذر فك ترميز فيديو المقدمة: {error.Error}";
+            FooterText.Text = WinUIStrings.Translate("تعذر فك ترميز فيديو المقدمة. تحقق من صيغة الفيديو ثم حاول مرة أخرى.", "Could not decode the intro video. Check its format and try again.");
             try { dialog.Hide(); } catch { }
         });
         try { await dialog.ShowAsync(); }
@@ -567,9 +567,9 @@ public sealed partial class MainWindow : Window
         {
             state = await _bridge.CallAsync("get_state");
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            MarkBridgeUnavailable(ex.Message);
+            MarkBridgeUnavailable(WinUIStrings.Translate("تعذر الاتصال بالخدمة المحلية. راجع سجل التشخيص.", "Could not connect to the local service. See diagnostics."));
             _refreshInProgress = false;
             return;
         }
@@ -630,14 +630,14 @@ public sealed partial class MainWindow : Window
             }
             catch (Exception ex)
             {
-                FooterText.Text = WinUIStrings.Translate("تعذر تحديث محتوى الصفحة: ", "Could not refresh page content: ") + ex.Message;
+                FooterText.Text = WinUIStrings.Translate("تعذر تحديث محتوى الصفحة: ", "Could not refresh page content: ") + WinUIStrings.SafeMessage(ex.Message, "راجع سجل التشخيص لمزيد من التفاصيل.", "See diagnostics for details.");
                 if (ContentFrame.Content is DashboardPage dashboard)
                     dashboard.SetServiceMessage(FooterText.Text);
             }
         }
         catch (Exception ex)
         {
-            FooterText.Text = WinUIStrings.Translate("تعذر تحديث حالة الواجهة: ", "Could not update interface state: ") + ex.Message;
+            FooterText.Text = WinUIStrings.Translate("تعذر تحديث حالة الواجهة: ", "Could not update interface state: ") + WinUIStrings.SafeMessage(ex.Message, "راجع سجل التشخيص لمزيد من التفاصيل.", "See diagnostics for details.");
         }
         finally
         {
@@ -667,7 +667,7 @@ public sealed partial class MainWindow : Window
         }
         catch (Exception ex)
         {
-            FooterText.Text = WinUIStrings.Translate("تعذر تغيير حالة الخدمة: ", "Could not change service state: ") + ex.Message;
+            FooterText.Text = WinUIStrings.Translate("تعذر تغيير حالة الخدمة: ", "Could not change service state: ") + WinUIStrings.SafeMessage(ex.Message, "راجع سجل التشخيص لمزيد من التفاصيل.", "See diagnostics for details.");
         }
         finally
         {
@@ -686,7 +686,7 @@ public sealed partial class MainWindow : Window
                 StatusText.Text = success
                     ? WinUIStrings.Translate("الخدمة تعمل — بانتظار اتصال الهاتف", "Service running — waiting for phone")
                     : WinUIStrings.Translate("تعذر تشغيل الخدمة", "Could not start service");
-                FooterText.Text = message["message"]?.GetValue<string>() ?? (success ? "الخدمة المحلية تعمل." : "راجع تفاصيل بدء الخدمة.");
+                FooterText.Text = WinUIStrings.SafeMessage(message["message"]?.GetValue<string>(), success ? "الخدمة المحلية تعمل." : "تعذر تشغيل الخدمة. راجع سجل التشخيص.", success ? "The local service is running." : "The service could not start. See diagnostics.");
                 if (ContentFrame.Content is DashboardPage dashboard)
                 {
                     dashboard.SetServiceMessage(FooterText.Text);
@@ -699,16 +699,16 @@ public sealed partial class MainWindow : Window
             else if (message["event"]?.GetValue<string>() == "log")
             {
                 var log = message["message"]?.GetValue<string>() ?? "";
-                FooterText.Text = log;
-                if (ContentFrame.Content is DashboardPage dashboard) dashboard.SetServiceMessage(log);
+                FooterText.Text = WinUIStrings.SafeMessage(log, "الخدمة المحلية تعمل.", "The local service is running.");
+                if (ContentFrame.Content is DashboardPage dashboard) dashboard.SetServiceMessage(FooterText.Text);
             }
             else if (message["event"]?.GetValue<string>() == "bridge_error")
             {
-                MarkBridgeUnavailable(message["message"]?.GetValue<string>() ?? "انقطع الاتصال بالخدمة المحلية.");
+            MarkBridgeUnavailable(WinUIStrings.Translate("انقطع الاتصال بالخدمة المحلية.", "The local service connection was lost."));
             }
             else if (message["event"]?.GetValue<string>() == "bridge_exited")
             {
-                var detail = message["message"]?.GetValue<string>() ?? "أُغلقت خدمة DeskTwin المحلية.";
+                var detail = WinUIStrings.Translate("أُغلقت خدمة DeskTwin المحلية.", "The DeskTwin local service stopped.");
                 MarkBridgeUnavailable(detail);
             }
         });
@@ -721,11 +721,11 @@ public sealed partial class MainWindow : Window
         StatusDot.Fill = new SolidColorBrush(Windows.UI.Color.FromArgb(255, 176, 42, 55));
         ServiceToggleButton.Content = WinUIStrings.Translate("الخدمة غير متاحة", "Service unavailable");
         ServiceToggleButton.IsEnabled = false;
-        FooterText.Text = detail;
+        FooterText.Text = WinUIStrings.SafeMessage(detail, "الخدمة المحلية غير متاحة. راجع سجل التشخيص.", "The local service is unavailable. See diagnostics.");
         if (ContentFrame.Content is ChatPage chatPage)
             chatPage.SetServiceState(false, false, false);
         if (ContentFrame.Content is DashboardPage dashboard)
-            dashboard.SetServiceMessage(detail);
+            dashboard.SetServiceMessage(WinUIStrings.SafeMessage(detail, "الخدمة المحلية غير متاحة. راجع سجل التشخيص.", "The local service is unavailable. See diagnostics."));
     }
 }
 
@@ -982,7 +982,7 @@ public sealed class DashboardPage : Page
         grid.Children.Add(card);
     }
 
-    public void SetServiceMessage(string message) => _serviceMessage.Text = message;
+    public void SetServiceMessage(string message) => _serviceMessage.Text = WinUIStrings.SafeMessage(message, "تعذر قراءة حالة الخدمة المحلية. راجع سجل التشخيص.", "Could not read local service status. See diagnostics.");
 
     public void ApplyTheme(ElementTheme theme)
     {
@@ -1069,7 +1069,7 @@ public sealed class DashboardPage : Page
         }
         catch (Exception ex)
         {
-            _status.Text = WinUIStrings.Translate("تعذر قراءة الحالة: ", "Could not read status: ") + ex.Message;
+            _status.Text = WinUIStrings.Translate("تعذر قراءة الحالة: ", "Could not read status: ") + WinUIStrings.SafeMessage(ex.Message, "راجع سجل التشخيص لمزيد من التفاصيل.", "See diagnostics for details.");
         }
         finally { _dashboardRefreshing = false; }
     }
@@ -1094,7 +1094,7 @@ public sealed class DashboardPage : Page
             else await _bridgeField.CallAsync("start_service");
             await RefreshAsync();
         }
-        catch (Exception ex) { _status.Text = WinUIStrings.Translate("تعذر تغيير حالة الخدمة: ", "Could not change service state: ") + ex.Message; }
+        catch (Exception ex) { _status.Text = WinUIStrings.Translate("تعذر تغيير حالة الخدمة: ", "Could not change service state: ") + WinUIStrings.SafeMessage(ex.Message, "راجع سجل التشخيص لمزيد من التفاصيل.", "See diagnostics for details."); }
         finally
         {
             _serviceToggleInProgress = false;
@@ -1132,7 +1132,7 @@ public sealed class DashboardPage : Page
                 _qr.Children.Clear();
                 _qrImage.Source = null;
                 _qrPlaceholder.Visibility = Visibility.Visible;
-                _qrStatus.Text = result?["error"]?.ToString() ?? "ابدأ الخدمة أولًا لإنشاء كود الاقتران.";
+                _qrStatus.Text = WinUIStrings.SafeMessage(result?["error"]?.ToString(), "ابدأ الخدمة أولًا لإنشاء كود الاقتران.", "Start the service before creating a pairing code.");
                 return;
             }
             if (code.Length != 6 || code.Any(character => !char.IsAsciiDigit(character)))
@@ -1143,7 +1143,7 @@ public sealed class DashboardPage : Page
             await DisplayPairingAsync(code, result?["qr_png"]?.GetValue<string>(), result?["qr_matrix"] as JsonArray, seconds,
                 result?["qr_error"]?.GetValue<string>());
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             _pairingCode.Text = generatedCode ?? "------";
             _qr.Children.Clear();
@@ -1153,8 +1153,8 @@ public sealed class DashboardPage : Page
             _pairingExpiresAt = null;
             _currentPairingCode = null;
             _qrStatus.Text = generatedCode is null
-                ? $"تعذر إنشاء كود الاقتران: {ex.Message}"
-                : $"الكود جاهز؛ تعذر عرض QR. أدخله يدويًا: {ex.Message}";
+                ? WinUIStrings.Translate("تعذر إنشاء كود الاقتران. راجع سجل التشخيص.", "Could not create a pairing code. See diagnostics.")
+                : WinUIStrings.Translate("الكود جاهز؛ تعذر عرض QR. أدخله يدويًا.", "The code is ready, but the QR could not be shown. Enter it manually.");
         }
         finally
         {
@@ -1178,8 +1178,7 @@ public sealed class DashboardPage : Page
         _qrPlaceholder.Visibility = Visibility.Visible;
         if (string.IsNullOrWhiteSpace(pngBase64) && matrix is null)
         {
-            _qrStatus.Text = WinUIStrings.Translate("الكود جاهز؛ تعذر إنشاء QR: ", "Code ready; QR could not be generated: ")
-                + (qrError ?? WinUIStrings.Translate("خطأ غير معروف", "unknown error"));
+            _qrStatus.Text = WinUIStrings.SafeMessage(qrError, "الكود جاهز؛ تعذر إنشاء QR. أدخله يدويًا.", "The code is ready, but the QR could not be generated. Enter it manually.");
         }
         else
         {
@@ -1197,7 +1196,7 @@ public sealed class DashboardPage : Page
                     "المربع الأبيض للتباين؛ داخله QR أسود يحتوي الكود نفسه.",
                     "White canvas ensures contrast; black QR inside contains this code.");
             }
-            catch (Exception matrixError) when (matrix is not null && !string.IsNullOrWhiteSpace(pngBase64))
+            catch (Exception) when (matrix is not null && !string.IsNullOrWhiteSpace(pngBase64))
             {
                 try
                 {
@@ -1207,23 +1206,22 @@ public sealed class DashboardPage : Page
                         "عُرض QR بالصورة الاحتياطية.",
                         "QR displayed using the image fallback.");
                 }
-                catch (Exception imageError)
+                catch (Exception)
                 {
                     _qr.Children.Clear();
                     _qrImage.Source = null;
                     _qrPlaceholder.Visibility = Visibility.Visible;
                     _qrStatus.Text = WinUIStrings.Translate(
-                        "الكود جاهز؛ تعذر عرض QR. المصفوفة: ",
-                        "Code ready; QR display failed. Matrix: ")
-                        + matrixError.Message + " | PNG: " + imageError.Message;
+                        "الكود جاهز؛ تعذر عرض QR. أدخله يدويًا.",
+                        "The code is ready, but the QR could not be shown. Enter it manually.");
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 _qr.Children.Clear();
                 _qrImage.Source = null;
                 _qrPlaceholder.Visibility = Visibility.Visible;
-                _qrStatus.Text = WinUIStrings.Translate("الكود جاهز؛ تعذر عرض QR: ", "Code ready; QR could not be displayed: ") + ex.Message;
+                _qrStatus.Text = WinUIStrings.Translate("الكود جاهز؛ تعذر عرض QR. أدخله يدويًا.", "The code is ready, but the QR could not be shown. Enter it manually.");
             }
         }
         StartPairingCountdown(secondsLeft);
@@ -1397,7 +1395,7 @@ public sealed class FoldersPage : Page
             _loadingShareSetting = true;
             _shareEntireDevice.IsOn = scope?["share_entire_device"]?.GetValue<bool>() == true;
         }
-        catch (Exception ex) { _message.Text = ex.Message; }
+        catch (Exception) { _message.Text = WinUIStrings.Translate("تعذر إكمال العملية. راجع سجل التشخيص لمزيد من التفاصيل.", "Could not complete the operation. See diagnostics for details."); }
         finally { _loadingShareSetting = false; }
     }
 
@@ -1428,14 +1426,14 @@ public sealed class FoldersPage : Page
                 }
             }
             await _bridge.CallAsync("set_share_entire_device", new { enabled = enable });
-            _message.Text = enable ? "تم تفعيل مشاركة الجهاز بالكامل." : "عادت المشاركة إلى المسارات المحددة فقط.";
+                _message.Text = enable ? WinUIStrings.Translate("تم تفعيل مشاركة الجهاز بالكامل.", "Full-computer sharing is enabled.") : WinUIStrings.Translate("عادت المشاركة إلى المسارات المحددة فقط.", "Sharing is limited to the selected locations again.");
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             _loadingShareSetting = true;
             _shareEntireDevice.IsOn = !enable;
             _loadingShareSetting = false;
-            _message.Text = ex.Message;
+            _message.Text = WinUIStrings.Translate("تعذر إكمال العملية. راجع سجل التشخيص لمزيد من التفاصيل.", "Could not complete the operation. See diagnostics for details.");
         }
         finally
         {
@@ -1449,13 +1447,13 @@ public sealed class FoldersPage : Page
         if (_bridge is null) return;
         if (_pathOperationInProgress)
         {
-            _message.Text = "هناك عملية مسارات جارية بالفعل.";
+            _message.Text = WinUIStrings.Translate("هناك عملية مسارات جارية بالفعل.", "A folder operation is already in progress.");
             return;
         }
         _pathOperationInProgress = true;
         try
         {
-            _message.Text = folder ? "اختر المجلد الذي تريد مشاركته…" : "اختر الملف الذي تريد مشاركته…";
+            _message.Text = folder ? WinUIStrings.Translate("اختر المجلد الذي تريد مشاركته…", "Choose a folder to share…") : WinUIStrings.Translate("اختر الملف الذي تريد مشاركته…", "Choose a file to share…");
             string? path;
             if (folder)
             {
@@ -1477,16 +1475,16 @@ public sealed class FoldersPage : Page
             }
             if (string.IsNullOrWhiteSpace(path))
             {
-                _message.Text = "لم يتم اختيار مسار؛ لم يتغير شيء.";
+                _message.Text = WinUIStrings.Translate("لم يتم اختيار مسار؛ لم يتغير شيء.", "No location was selected; nothing changed.");
                 return;
             }
-            _message.Text = "جارٍ إضافة المسار…";
+            _message.Text = WinUIStrings.Translate("جارٍ إضافة المسار…", "Adding location…");
             await _bridge.CallAsync("add_target", new { path });
             _lastTargetsSnapshot = null;
             _pathOperationInProgress = false;
             await RefreshAsync();
         }
-        catch (Exception ex) { _message.Text = ex.Message; }
+        catch (Exception) { _message.Text = WinUIStrings.Translate("تعذر إكمال العملية. راجع سجل التشخيص لمزيد من التفاصيل.", "Could not complete the operation. See diagnostics for details."); }
         finally { _pathOperationInProgress = false; }
     }
 
@@ -1502,7 +1500,7 @@ public sealed class FoldersPage : Page
             _items.Children.Clear();
             if (list is null || list.Count == 0)
             {
-                _message.Text = "لم تتم إضافة مجلدات بعد.";
+                _message.Text = WinUIStrings.Translate("لم تتم إضافة مجلدات بعد.", "No folders have been added yet.");
                 _lastTargetsSnapshot = snapshot;
                 return;
             }
@@ -1526,7 +1524,7 @@ public sealed class FoldersPage : Page
             }
             _lastTargetsSnapshot = snapshot;
         }
-        catch (Exception ex) { _message.Text = ex.Message; }
+        catch (Exception) { _message.Text = WinUIStrings.Translate("تعذر إكمال العملية. راجع سجل التشخيص لمزيد من التفاصيل.", "Could not complete the operation. See diagnostics for details."); }
         finally { _targetsRefreshing = false; }
     }
 
@@ -1543,7 +1541,7 @@ public sealed class FoldersPage : Page
         };
         if (await dialog.ShowAsync() != ContentDialogResult.Primary || _pathOperationInProgress) return;
         _pathOperationInProgress = true;
-        _message.Text = "جارٍ إزالة المسار…";
+        _message.Text = WinUIStrings.Translate("جارٍ إزالة المسار…", "Removing location…");
         try
         {
             await _bridge.CallAsync("remove_target", new { path });
@@ -1551,7 +1549,7 @@ public sealed class FoldersPage : Page
             _pathOperationInProgress = false;
             await RefreshAsync();
         }
-        catch (Exception ex) { _message.Text = ex.Message; }
+        catch (Exception) { _message.Text = WinUIStrings.Translate("تعذر إكمال العملية. راجع سجل التشخيص لمزيد من التفاصيل.", "Could not complete the operation. See diagnostics for details."); }
         finally { _pathOperationInProgress = false; }
     }
 }
@@ -1610,7 +1608,7 @@ public sealed class DevicesPage : Page
     {
         if (_bridge is null || _devicesRefreshing || _deviceMutationInProgress) return;
         _devicesRefreshing = true;
-        if (_rows.Children.Count == 0) _message.Text = "جارٍ تحميل الأجهزة…";
+        if (_rows.Children.Count == 0) _message.Text = WinUIStrings.Translate("جارٍ تحميل الأجهزة…", "Loading devices…");
         try
         {
             var devices = await _bridge.CallAsync("get_devices") as JsonArray;
@@ -1624,7 +1622,7 @@ public sealed class DevicesPage : Page
             _rows.Children.Clear();
             if (devices is null || devices.Count == 0)
             {
-                _message.Text = "شغّل الخدمة لعرض الأجهزة المقترنة.";
+                _message.Text = WinUIStrings.Translate("شغّل الخدمة لعرض الأجهزة المقترنة.", "Start the service to view paired devices.");
                 _lastDevicesSnapshot = snapshot;
                 return;
             }
@@ -1656,7 +1654,7 @@ public sealed class DevicesPage : Page
                         if (_deviceMutationInProgress || _devicesRefreshing)
                         {
                             trust.SelectedValue = savedTrustLevel;
-                            _message.Text = "انتظر انتهاء عملية الجهاز الحالية.";
+                            _message.Text = WinUIStrings.Translate("انتظر انتهاء عملية الجهاز الحالية.", "Wait for the current device operation to finish.");
                             return;
                         }
                         trustChangeInProgress = true;
@@ -1668,12 +1666,12 @@ public sealed class DevicesPage : Page
                             await _bridge.CallAsync("set_device_trust", new { device_id = id, trust_level = level });
                             savedTrustLevel = level;
                             _lastDevicesSnapshot = null;
-                            _message.Text = "تم تحديث مستوى الثقة.";
+                            _message.Text = WinUIStrings.Translate("تم تحديث مستوى الثقة.", "Trust level updated.");
                         }
-                        catch (Exception ex)
+                        catch (Exception)
                         {
                             trust.SelectedValue = previousLevel;
-                            _message.Text = ex.Message;
+                            _message.Text = WinUIStrings.Translate("تعذر إكمال العملية. راجع سجل التشخيص لمزيد من التفاصيل.", "Could not complete the operation. See diagnostics for details.");
                         }
                         finally
                         {
@@ -1693,7 +1691,7 @@ public sealed class DevicesPage : Page
             }
             _lastDevicesSnapshot = snapshot;
         }
-        catch (Exception ex) { _message.Text = ex.Message; }
+        catch (Exception) { _message.Text = WinUIStrings.Translate("تعذر إكمال العملية. راجع سجل التشخيص لمزيد من التفاصيل.", "Could not complete the operation. See diagnostics for details."); }
         finally { _devicesRefreshing = false; }
     }
 
@@ -1717,9 +1715,9 @@ public sealed class DevicesPage : Page
             _lastDevicesSnapshot = null;
             _deviceMutationInProgress = false;
             await RefreshAsync();
-            _message.Text = count == 0 ? "لا توجد سجلات ملغاة للحذف." : $"تم حذف {count} سجل جهاز ملغى.";
+            _message.Text = count == 0 ? WinUIStrings.Translate("لا توجد سجلات ملغاة للحذف.", "There are no revoked-device records to remove.") : WinUIStrings.Translate($"تم حذف {count} سجل جهاز ملغى.", $"Removed {count} revoked-device record(s).");
         }
-        catch (Exception ex) { _message.Text = ex.Message; }
+        catch (Exception) { _message.Text = WinUIStrings.Translate("تعذر إكمال العملية. راجع سجل التشخيص لمزيد من التفاصيل.", "Could not complete the operation. See diagnostics for details."); }
         finally { _deviceMutationInProgress = false; }
     }
 
@@ -1735,9 +1733,9 @@ public sealed class DevicesPage : Page
             _lastDevicesSnapshot = null;
             _deviceMutationInProgress = false;
             await RefreshAsync();
-            _message.Text = $"تم إلغاء ثقة {name}.";
+            _message.Text = WinUIStrings.Translate($"تم إلغاء ثقة {name}.", $"Trust was revoked for {name}.");
         }
-        catch (Exception ex) { _message.Text = ex.Message; }
+        catch (Exception) { _message.Text = WinUIStrings.Translate("تعذر إكمال العملية. راجع سجل التشخيص لمزيد من التفاصيل.", "Could not complete the operation. See diagnostics for details."); }
         finally { _deviceMutationInProgress = false; }
     }
 
@@ -1865,7 +1863,7 @@ public sealed class ApprovalsPage : Page
             }
             _lastApprovalsSnapshot = snapshot;
         }
-        catch (Exception ex) { _message.Text = ex.Message; }
+        catch (Exception) { _message.Text = WinUIStrings.Translate("تعذر إكمال العملية. راجع سجل التشخيص لمزيد من التفاصيل.", "Could not complete the operation. See diagnostics for details."); }
         finally { _refreshing = false; }
     }
 
@@ -1899,7 +1897,7 @@ public sealed class ApprovalsPage : Page
             try { commandWorkingDirectory = await ResolveCommandWorkingDirectoryAsync(command); }
             catch (Exception ex)
             {
-                await ShowApprovalNoticeAsync(WinUIStrings.Translate("تعذر فحص مجلد العمل", "Could not resolve working directory"), ex.Message);
+                await ShowApprovalNoticeAsync(WinUIStrings.Translate("تعذر فحص مجلد العمل", "Could not resolve working directory"), WinUIStrings.SafeMessage(ex.Message, "راجع مسار مجلد العمل.", "Check the working folder path."));
                 return;
             }
         }
@@ -1966,7 +1964,7 @@ public sealed class ApprovalsPage : Page
             {
                 if (result?["success"]?.GetValue<bool>() != true)
                 {
-                    var error = result?["error"]?.GetValue<string>() ?? WinUIStrings.Translate("تعذر تنفيذ الطلب.", "The request could not be completed.");
+                    var error = WinUIStrings.SafeMessage(result?["error"]?.GetValue<string>(), "تعذر تنفيذ الطلب. راجع سجل التشخيص.", "The request could not be completed. See diagnostics.");
                     await ShowApprovalNoticeAsync(WinUIStrings.Translate("فشل التنفيذ", "Execution failed"), error);
                 }
                 else
@@ -1987,7 +1985,7 @@ public sealed class ApprovalsPage : Page
         }
         catch (Exception ex)
         {
-            await ShowApprovalNoticeAsync(WinUIStrings.Translate("تعذر إكمال الطلب", "Could not complete request"), ex.Message);
+            await ShowApprovalNoticeAsync(WinUIStrings.Translate("تعذر إكمال الطلب", "Could not complete request"), WinUIStrings.SafeMessage(ex.Message, "راجع سجل التشخيص لمزيد من التفاصيل.", "See diagnostics for details."));
         }
         }
         finally
@@ -2020,7 +2018,7 @@ public sealed class ApprovalsPage : Page
         }
         catch (Exception ex)
         {
-            await ShowApprovalNoticeAsync(WinUIStrings.Translate("تعذر حفظ الطلب", "Could not save request"), ex.Message);
+            await ShowApprovalNoticeAsync(WinUIStrings.Translate("تعذر حفظ الطلب", "Could not save request"), WinUIStrings.SafeMessage(ex.Message, "راجع صلاحيات الحفظ ثم حاول مرة أخرى.", "Check save permissions and try again."));
         }
         finally
         {
@@ -2190,7 +2188,7 @@ public sealed class ApprovalsPage : Page
         }
         catch (Exception ex)
         {
-            await ShowApprovalNoticeAsync(WinUIStrings.Translate("تعذر فتح المجلد", "Could not open folder"), ex.Message);
+            await ShowApprovalNoticeAsync(WinUIStrings.Translate("تعذر فتح المجلد", "Could not open folder"), WinUIStrings.SafeMessage(ex.Message, "تحقق من وجود المجلد ثم حاول مرة أخرى.", "Check that the folder exists, then try again."));
         }
     }
 
@@ -2263,7 +2261,7 @@ public sealed class ActivityPage : Page
         _loadMore.Click += async (_, _) =>
         {
             if (!_hasMore || _loading) return;
-            _message.Text = "جارٍ تحميل أنشطة أقدم…";
+            _message.Text = WinUIStrings.Translate("جارٍ تحميل أنشطة أقدم…", "Loading older activity…");
             await LoadPageAsync(append: true);
         };
         stack.Children.Add(_loadMore);
@@ -2282,7 +2280,7 @@ public sealed class ActivityPage : Page
         if (_loading) return;
         _offset = 0;
         _lastActivityPageSnapshot = null;
-        _message.Text = "جارٍ تحميل سجل النشاط…";
+        _message.Text = WinUIStrings.Translate("جارٍ تحميل سجل النشاط…", "Loading activity log…");
         await LoadPageAsync(append: false);
     }
 
@@ -2308,7 +2306,7 @@ public sealed class ActivityPage : Page
                 if (!append) _rows.Children.Clear();
                 _offset = requestedOffset;
                 _lastActivityPageSnapshot = snapshot;
-                _message.Text = requestedOffset == 0 ? "لا يوجد نشاط مسجل." : "لا توجد أنشطة أقدم.";
+                _message.Text = requestedOffset == 0 ? WinUIStrings.Translate("لا يوجد نشاط مسجل.", "No activity recorded.") : WinUIStrings.Translate("لا توجد أنشطة أقدم.", "There is no older activity.");
                 _hasMore = false;
                 _loadMore.Visibility = Visibility.Collapsed;
                 return;
@@ -2338,7 +2336,7 @@ public sealed class ActivityPage : Page
             _hasMore = activity.Count > PageSize;
             _loadMore.Visibility = _hasMore ? Visibility.Visible : Visibility.Collapsed;
         }
-        catch (Exception ex) { _message.Text = ex.Message; }
+        catch (Exception) { _message.Text = WinUIStrings.Translate("تعذر إكمال العملية. راجع سجل التشخيص لمزيد من التفاصيل.", "Could not complete the operation. See diagnostics for details."); }
         finally
         {
             _loading = false;
@@ -2365,7 +2363,7 @@ public sealed class ActivityPage : Page
             _lastActivityPageSnapshot = null;
             await LoadPageAsync(append: false);
         }
-        catch (Exception ex) { _message.Text = ex.Message; }
+        catch (Exception) { _message.Text = WinUIStrings.Translate("تعذر إكمال العملية. راجع سجل التشخيص لمزيد من التفاصيل.", "Could not complete the operation. See diagnostics for details."); }
     }
 
     private static string ActivityName(string type) => type switch
@@ -2431,7 +2429,7 @@ public sealed class SecurityPage : Page
             _rows.Children.Clear();
             if (status is null)
             {
-                _message.Text = "شغّل الخدمة لعرض حالة الأمان.";
+                _message.Text = WinUIStrings.Translate("شغّل الخدمة لعرض حالة الأمان.", "Start the service to view security status.");
                 _lastSecuritySnapshot = snapshot;
                 return;
             }
@@ -2452,7 +2450,7 @@ public sealed class SecurityPage : Page
             }
             _lastSecuritySnapshot = snapshot;
         }
-        catch (Exception ex) { _message.Text = ex.Message; }
+        catch (Exception) { _message.Text = WinUIStrings.Translate("تعذر إكمال العملية. راجع سجل التشخيص لمزيد من التفاصيل.", "Could not complete the operation. See diagnostics for details."); }
         finally { _securityRefreshing = false; }
     }
 
@@ -2476,9 +2474,9 @@ public sealed class SecurityPage : Page
             _lastSecuritySnapshot = null;
             _securityMutationInProgress = false;
             await RefreshAsync();
-            _message.Text = $"تم إلغاء ثقة {count} جهاز.";
+            _message.Text = WinUIStrings.Translate($"تم إلغاء ثقة {count} جهاز.", $"Trust was revoked for {count} device(s).");
         }
-        catch (Exception ex) { _message.Text = ex.Message; }
+        catch (Exception) { _message.Text = WinUIStrings.Translate("تعذر إكمال العملية. راجع سجل التشخيص لمزيد من التفاصيل.", "Could not complete the operation. See diagnostics for details."); }
         finally { _securityMutationInProgress = false; }
     }
 
@@ -2607,12 +2605,18 @@ internal static class WinUIHelpers
 
 internal static class WinUIStrings
 {
-    public static string Language { get; set; } = "ar";
+    public static string Language { get; set; } = "en";
     public static string Translate(string arabic, string english) => Language == "en" ? english : arabic;
+    public static string SafeMessage(string? value, string arabicFallback, string englishFallback)
+    {
+        if (string.IsNullOrWhiteSpace(value)) return Translate(arabicFallback, englishFallback);
+        var containsArabic = System.Text.RegularExpressions.Regex.IsMatch(value, "[\\u0600-\\u06FF]");
+        return Language == "en" == !containsArabic ? value : Translate(arabicFallback, englishFallback);
+    }
 
     private static readonly Dictionary<string, string> English = new()
     {
-        ["الإعدادات"] = "Settings", ["تفضيلات واجهة WinUI وخيارات بدء الخدمة."] = "WinUI preferences and service startup options.",
+        ["الإعدادات"] = "Settings", ["تفضيلات واجهة WinUI وخيارات بدء الخدمة."] = "WinUI preferences and service startup options.", ["لسه محدش اتربط"] = "No user is linked yet",
         ["المظهر"] = "Appearance", ["فاتح — أزرق وأبيض"] = "Light — blue and white", ["داكن"] = "Dark",
         ["العربية"] = "Arabic", ["لغة التطبيق"] = "App language", ["سمة التطبيق"] = "App theme",
         ["بدء التشغيل"] = "Startup", ["تشغيل الخدمة عند فتح DeskTwin"] = "Start service when DeskTwin opens",

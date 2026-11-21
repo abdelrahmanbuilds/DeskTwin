@@ -191,7 +191,7 @@ public sealed class ChatPage : Page
         }
         catch (Exception ex)
         {
-            _status.Text = WinUIStrings.Translate("تعذر تحديث المحادثة: ", "Could not refresh the conversation: ") + ex.Message;
+            _status.Text = WinUIStrings.Translate("تعذر تحديث المحادثة: ", "Could not refresh the conversation: ") + WinUIStrings.SafeMessage(ex.Message, "راجع سجل التشخيص لمزيد من التفاصيل.", "See diagnostics for details.");
         }
     }
 
@@ -252,7 +252,7 @@ public sealed class ChatPage : Page
         }
         catch (Exception ex)
         {
-            _status.Text = WinUIStrings.Translate("تعذر إرسال الرسالة: ", "Could not send the message: ") + ex.Message;
+            _status.Text = WinUIStrings.Translate("تعذر إرسال الرسالة: ", "Could not send the message: ") + WinUIStrings.SafeMessage(ex.Message, "راجع سجل التشخيص لمزيد من التفاصيل.", "See diagnostics for details.");
         }
         finally
         {

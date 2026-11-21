@@ -10,6 +10,8 @@
 
 For a map of app modules and source paths, see [Architecture and source map](ARCHITECTURE.md). To prepare a change for review, see [Contributing](../CONTRIBUTING.md).
 
+Both apps include English and Arabic interface copy, including their user-facing status, notification, and error messages. A fresh install starts in English; the user's saved language choice is preserved across updates. Android language selection is in the app's Settings screen. Windows language selection is in WinUI Settings. File names, folder names, paths, device names, and user-entered text are data and must remain unchanged in both languages.
+
 ## Android
 
 Open the `Android/` directory in Android Studio and let Gradle sync the project, or run this from the repository root:

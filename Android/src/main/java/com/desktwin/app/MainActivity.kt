@@ -76,6 +76,7 @@ import com.desktwin.app.ui.theme.LocalDeskTwinLanguage
 import com.desktwin.app.ui.theme.deskTwinThemePreset
 import com.desktwin.app.ui.theme.deskTwinThemeIsDark
 import com.desktwin.app.ui.theme.ThemeArtStyle
+import com.desktwin.app.ui.theme.localizedText
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
@@ -95,11 +96,11 @@ import java.util.concurrent.atomic.AtomicBoolean
  * "باقي حوالي..." من عدد ثواني متبقية - بيقرّبها لأقرب وحدة مفهومة
  * (ثواني/دقايق/ساعات) بدل رقم دقيق مربك زي "127 ثانية".
  */
-private fun formatEtaLabel(remainingSeconds: Long): String {
+private fun formatEtaLabel(remainingSeconds: Long, language: String): String {
     return when {
-        remainingSeconds < 60 -> "باقي حوالي $remainingSeconds ثانية"
-        remainingSeconds < 3600 -> "باقي حوالي ${remainingSeconds / 60} دقيقة"
-        else -> "باقي حوالي ${remainingSeconds / 3600} ساعة"
+        remainingSeconds < 60 -> localizedText(language, "باقي حوالي $remainingSeconds ثانية", "About $remainingSeconds sec remaining")
+        remainingSeconds < 3600 -> localizedText(language, "باقي حوالي ${remainingSeconds / 60} دقيقة", "About ${remainingSeconds / 60} min remaining")
+        else -> localizedText(language, "باقي حوالي ${remainingSeconds / 3600} ساعة", "About ${remainingSeconds / 3600} hr remaining")
     }
 }
 
@@ -114,18 +115,18 @@ private fun formatTransferSpeed(bytesPerSecond: Long): String {
     return "%.1f %s".format(java.util.Locale.US, value, units[unit])
 }
 
-private fun classifyPairingError(error: Throwable): String {
+private fun classifyPairingError(error: Throwable, language: String): String {
     val text = error::class.java.simpleName
     return when {
         text.contains("CertificateNotPinned", true) ->
-            "CERTIFICATE_NOT_PINNED: لازم تعيد Pairing مع الكمبيوتر قبل الاتصال."
+            localizedText(language, "CERTIFICATE_NOT_PINNED: لازم تعيد Pairing مع الكمبيوتر قبل الاتصال.", "CERTIFICATE_NOT_PINNED: Pair the phone with the computer again before connecting.")
         text.contains("SSL", true) || text.contains("Certificate", true) ->
-            "TLS_CERTIFICATE_ERROR: شهادة الكمبيوتر غير متوافقة. الحل: امسح شهادة الاقتران وأعد الاكتشاف."
+            localizedText(language, "TLS_CERTIFICATE_ERROR: شهادة الكمبيوتر غير متوافقة. الحل: امسح شهادة الاقتران وأعد الاكتشاف.", "TLS_CERTIFICATE_ERROR: The computer certificate does not match. Remove the saved pairing and discover the computer again.")
         text.contains("Timeout", true) ->
-            "SOCKET_TIMEOUT: الكمبيوتر لم يرد في الوقت المحدد. تأكد أن الهاتف والكمبيوتر على الشبكة نفسها، وأوقف VPN أو عزل الأجهزة في الراوتر، واسمح لـDeskTwin بالاتصالات الواردة على TCP 8420 في جدار حماية Windows."
+            localizedText(language, "SOCKET_TIMEOUT: الكمبيوتر لم يرد في الوقت المحدد. تأكد أن الهاتف والكمبيوتر على الشبكة نفسها، وأوقف VPN أو عزل الأجهزة في الراوتر، واسمح لـDeskTwin بالاتصالات الواردة على TCP 8420 في جدار حماية Windows.", "SOCKET_TIMEOUT: The computer did not respond in time. Put both devices on the same network, check VPN or router isolation, and allow DeskTwin through Windows Firewall on TCP 8420.")
         text.contains("Connect", true) || text.contains("UnknownHost", true) ->
-            "CONNECT_ERROR: الهاتف لا يستطيع الوصول للكمبيوتر. الحل: تأكد من نفس الشبكة والمنفذ 8420."
-        else -> "PAIRING_NETWORK_ERROR: ${error.message ?: text}. الحل: أعد اكتشاف الكمبيوتر وحاول مرة أخرى."
+            localizedText(language, "CONNECT_ERROR: الهاتف لا يستطيع الوصول للكمبيوتر. الحل: تأكد من نفس الشبكة والمنفذ 8420.", "CONNECT_ERROR: The phone cannot reach the computer. Check that both devices are on the same network and TCP 8420 is allowed.")
+        else -> localizedText(language, "PAIRING_NETWORK_ERROR: ${error.message ?: text}. الحل: أعد اكتشاف الكمبيوتر وحاول مرة أخرى.", "PAIRING_NETWORK_ERROR: ${error.message ?: text}. Discover the computer again and retry.")
     }
 }
 
@@ -220,7 +221,7 @@ private fun prioritizePairingEndpoints(context: Context, endpoints: List<Discove
 
 class MainActivity : ComponentActivity() {
 
-    fun addFileShortcut(file: FileMetadata) {
+    fun addFileShortcut(file: FileMetadata, language: String) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N_MR1) return
         val manager = getSystemService(ShortcutManager::class.java) ?: return
         val intent = Intent(this, MainActivity::class.java).apply {
@@ -230,7 +231,7 @@ class MainActivity : ComponentActivity() {
         }
         val shortcut = ShortcutInfo.Builder(this, "file_${file.id}")
             .setShortLabel(file.name.take(25))
-            .setLongLabel("فتح ${file.name}")
+            .setLongLabel(localizedText(language, "فتح ${file.name}", "Open ${file.name}"))
             .setIcon(Icon.createWithResource(this, android.R.drawable.ic_menu_view))
             .setIntent(intent)
             .build()
@@ -261,8 +262,8 @@ class MainActivity : ComponentActivity() {
         commandQueue = CommandQueue(applicationContext)
         treeMirrorStore = TreeMirrorStore(applicationContext)
         offlineCommandQueue = OfflineCommandQueue(applicationContext)
-        com.desktwin.app.notifications.TransferNotifications.ensureChannel(applicationContext)
-        com.desktwin.app.notifications.ChatNotifications.ensureChannel(applicationContext)
+        com.desktwin.app.notifications.TransferNotifications.ensureChannel(applicationContext, "en")
+        com.desktwin.app.notifications.ChatNotifications.ensureChannel(applicationContext, "en")
 
         setContent {
             // Match the desktop's dark first frame while DataStore restores the
@@ -271,7 +272,7 @@ class MainActivity : ComponentActivity() {
             val themePresetId by preferences.themePreset.collectAsState(initial = "desktwin")
             val reduceMotion by preferences.reduceMotion.collectAsState(initial = false)
             val systemIsDark = isSystemInDarkTheme()
-            val language by preferences.language.collectAsState(initial = "ar")
+            val language by preferences.language.collectAsState(initial = "en")
             val activeThemePreset = deskTwinThemePreset(themePresetId)
             val resolvedDarkTheme = deskTwinThemeIsDark(activeThemePreset, themeMode, systemIsDark)
             SideEffect {
@@ -348,7 +349,11 @@ fun DeskTwinApp(
     val selectedThemePreset by preferences.themePreset.collectAsState(initial = "desktwin")
     val themeSoundUris by preferences.themeSoundUris.collectAsState(initial = emptyMap())
     val reduceMotion by preferences.reduceMotion.collectAsState(initial = false)
-    val selectedLanguage by preferences.language.collectAsState(initial = "ar")
+    val selectedLanguage by preferences.language.collectAsState(initial = "en")
+    LaunchedEffect(selectedLanguage) {
+        com.desktwin.app.notifications.TransferNotifications.ensureChannel(context, selectedLanguage)
+        com.desktwin.app.notifications.ChatNotifications.ensureChannel(context, selectedLanguage)
+    }
     val introVideoUri by preferences.introVideoUri.collectAsState(initial = null)
     val introMode by preferences.introMode.collectAsState(initial = "auto")
     val selectedFileViewMode by preferences.fileViewMode.collectAsState(initial = "list")
@@ -513,7 +518,7 @@ fun DeskTwinApp(
     LaunchedEffect(downloadError) {
         if (downloadError != null && actionableError == null) {
             actionableError = DeskTwinErrorPresenter.fromThrowable(
-                IllegalStateException(downloadError!!)
+                IllegalStateException(downloadError!!), selectedLanguage
             )
         }
     }
@@ -918,7 +923,8 @@ fun DeskTwinApp(
                         if (chatMessages.none { it.id == messageId }) {
                             chatMessages = chatMessages + ChatMessage(messageId, text, fromPhone = false, status = "تم الاستلام")
                             com.desktwin.app.notifications.ChatNotifications.showIncoming(
-                                context.applicationContext, "الكمبيوتر", text, messageId
+                                context.applicationContext,
+                                localizedText(selectedLanguage, "الكمبيوتر", "Computer"), text, messageId, selectedLanguage
                             )
                         }
                     }
@@ -1122,7 +1128,7 @@ fun DeskTwinApp(
                             val fraction = if (total > 0) sent.toFloat() / total.toFloat() else 0f
                             uploadProgress = uploadProgress + (item.id to fraction)
                             com.desktwin.app.notifications.TransferNotifications.updateProgress(
-                                context, item.id, item.fileName, isUpload = true, fraction = fraction
+                                context, item.id, item.fileName, isUpload = true, fraction = fraction, language = selectedLanguage
                             )
 
                             val now = System.currentTimeMillis()
@@ -1133,7 +1139,7 @@ fun DeskTwinApp(
                                 if (bytesPerSecond > 0) {
                                     val remainingBytes = total - sent
                                     val remainingSeconds = remainingBytes / bytesPerSecond
-                                    uploadEtaLabels = uploadEtaLabels + (item.id to formatEtaLabel(remainingSeconds))
+                                    uploadEtaLabels = uploadEtaLabels + (item.id to formatEtaLabel(remainingSeconds, selectedLanguage))
                                     uploadSpeedLabels = uploadSpeedLabels + (item.id to formatTransferSpeed(bytesPerSecond))
                                 }
                                 lastSampleTime = now
@@ -1163,7 +1169,7 @@ fun DeskTwinApp(
                                     try {
                                         currentApi()?.setWallpaper(connected.token, outcome.response.file_id)
                                     } catch (_: Exception) {
-                                        downloadError = "تم الرفع لكن تعذر تعيين الخلفية"
+                                        downloadError = localizedText(selectedLanguage, "تم الرفع لكن تعذر تعيين الخلفية", "The upload completed, but the wallpaper could not be set.")
                                     }
                                 }
                                 uploadQueue.remove(item.id)
@@ -1210,7 +1216,7 @@ fun DeskTwinApp(
                 if (error is CancellationException) throw error
                 Log.w("DeskTwinDiscovery", "Discovery ended with an error", error)
                 if (scannedPairingCode != null) {
-                    pairingError = "تمت قراءة QR لكن تعذر البحث عن الكمبيوتر. تأكد أنه يعمل على الشبكة نفسها ثم أعد المحاولة."
+                    pairingError = localizedText(selectedLanguage, "تمت قراءة QR لكن تعذر البحث عن الكمبيوتر. تأكد أنه يعمل على الشبكة نفسها ثم أعد المحاولة.", "QR was read, but the computer could not be found. Make sure it is on the same network and try again.")
                 }
             } finally {
                 if (currentCoroutineContext().isActive) {
@@ -1225,8 +1231,8 @@ fun DeskTwinApp(
                                 pairingError = null
                                 pushScreen(Screen.Pairing)
                             }
-                            0 -> pairingError = "تمت قراءة الكود، لكن لم يظهر كمبيوتر DeskTwin. تأكد من تشغيل الخدمة وعلى نفس الشبكة ثم اضغط إعادة البحث."
-                            else -> pairingError = "تمت قراءة الكود. اختر الكمبيوتر المقصود من القائمة لإكمال الاقتران."
+                            0 -> pairingError = localizedText(selectedLanguage, "تمت قراءة الكود، لكن لم يظهر كمبيوتر DeskTwin. تأكد من تشغيل الخدمة وعلى نفس الشبكة ثم اضغط إعادة البحث.", "The code was read, but no DeskTwin computer appeared. Start the service on the same network, then search again.")
+                            else -> pairingError = localizedText(selectedLanguage, "تمت قراءة الكود. اختر الكمبيوتر المقصود من القائمة لإكمال الاقتران.", "The code was read. Choose the computer you want to pair with.")
                         }
                     }
                 }
@@ -1267,14 +1273,14 @@ fun DeskTwinApp(
                             selectedDevice = device
                             if (screen !is Screen.Pairing) pushScreen(Screen.Pairing)
                         } else {
-                            pairingError = "تمت قراءة الكود؛ جاري البحث عن الكمبيوتر على الشبكة…"
+                            pairingError = localizedText(selectedLanguage, "تمت قراءة الكود؛ جاري البحث عن الكمبيوتر على الشبكة…", "Code scanned; searching the network for the computer…")
                             startDiscovery()
                         }
                     } else {
                         scannedPairingCode = null
                         scannedPairingDevices = emptyList()
                         scannedPairingFingerprint = null
-                        pairingError = "QR غير صالح أو قديم. امسح QR جديدًا من برنامج DeskTwin على الكمبيوتر ثم حاول مرة أخرى."
+                        pairingError = localizedText(selectedLanguage, "QR غير صالح أو قديم. امسح QR جديدًا من برنامج DeskTwin على الكمبيوتر ثم حاول مرة أخرى.", "This QR code is invalid or expired. Scan a new code from DeskTwin on the computer.")
                     }
                 }
                 .addOnCanceledListener {
@@ -1284,7 +1290,7 @@ fun DeskTwinApp(
                     isQrScannerPreparing = false
                     Log.e("DeskTwinQr", "Google Code Scanner failed", error)
                     val status = (error as? ApiException)?.statusCode?.let { "GMS $it" }
-                    pairingError = "تعذر تشغيل ماسح QR${status?.let { " ($it)" } ?: ""}. أدخل عنوان الكمبيوتر والكود يدويًا، أو أعد المحاولة بعد اكتمال تحديث Google Play services."
+                    pairingError = localizedText(selectedLanguage, "تعذر تشغيل ماسح QR${status?.let { " ($it)" } ?: ""}. أدخل عنوان الكمبيوتر والكود يدويًا، أو أعد المحاولة بعد اكتمال تحديث Google Play services.", "The QR scanner could not start${status?.let { " ($it)" } ?: ""}. Enter the computer address and pairing code manually, or try again after Google Play services finishes updating.")
                 }
         }
 
@@ -1294,7 +1300,7 @@ fun DeskTwinApp(
                 if (availability.areModulesAvailable()) {
                     scanAfterModuleReady()
                 } else {
-                    pairingError = "جارٍ تجهيز ماسح QR من Google Play services…"
+                    pairingError = localizedText(selectedLanguage, "جارٍ تجهيز ماسح QR من Google Play services…", "Preparing the QR scanner with Google Play services…")
                     val scanStarted = AtomicBoolean(false)
                     val installListener = object : InstallStatusListener {
                         override fun onInstallStatusUpdated(update: ModuleInstallStatusUpdate) {
@@ -1305,7 +1311,7 @@ fun DeskTwinApp(
                                 ModuleInstallStatusUpdate.InstallState.STATE_FAILED,
                                 ModuleInstallStatusUpdate.InstallState.STATE_CANCELED -> {
                                     isQrScannerPreparing = false
-                                    pairingError = "تعذر تجهيز وحدة QR من Google Play services. استخدم إدخال عنوان الكمبيوتر والكود يدويًا ثم أعد المحاولة."
+                                    pairingError = localizedText(selectedLanguage, "تعذر تجهيز وحدة QR من Google Play services. استخدم إدخال عنوان الكمبيوتر والكود يدويًا ثم أعد المحاولة.", "Google Play services could not prepare the QR scanner. Enter the computer address and pairing code manually, then try again.")
                                 }
                             }
                         }
@@ -1324,7 +1330,7 @@ fun DeskTwinApp(
                             isQrScannerPreparing = false
                             Log.e("DeskTwinQr", "Google Code Scanner module install failed", error)
                             val status = (error as? ApiException)?.statusCode?.let { "GMS $it" }
-                            pairingError = "فشل تجهيز ماسح QR${status?.let { " ($it)" } ?: ""}. استخدم إدخال عنوان الكمبيوتر والكود يدويًا."
+                            pairingError = localizedText(selectedLanguage, "فشل تجهيز ماسح QR${status?.let { " ($it)" } ?: ""}. استخدم إدخال عنوان الكمبيوتر والكود يدويًا.", "The QR scanner could not be prepared${status?.let { " ($it)" } ?: ""}. Enter the computer address and pairing code manually.")
                         }
                 }
             }
@@ -1348,16 +1354,16 @@ fun DeskTwinApp(
                 activityEntries = response.body().orEmpty()
             } else {
                 activityError = if (response == null) {
-                    "لم يصل رد من الكمبيوتر. تحقق من الاتصال ثم أعد المحاولة."
+                    localizedText(selectedLanguage, "لم يصل رد من الكمبيوتر. تحقق من الاتصال ثم أعد المحاولة.", "The computer did not respond. Check the connection and try again.")
                 } else {
-                    "تعذر تحميل سجل النشاط (HTTP ${response.code()}). أعد المحاولة."
+                    localizedText(selectedLanguage, "تعذر تحميل سجل النشاط (HTTP ${response.code()}). أعد المحاولة.", "Could not load the activity log (HTTP ${response.code()}). Try again.")
                 }
             }
         } catch (cancelled: CancellationException) {
             throw cancelled
         } catch (error: Exception) {
             if (generation == activityRequestGeneration) {
-                activityError = "تعذر الاتصال لتحميل سجل النشاط: ${error.message ?: "خطأ غير معروف"}"
+                activityError = localizedText(selectedLanguage, "تعذر الاتصال لتحميل سجل النشاط.", "Could not connect to load the activity log.")
             }
         } finally {
             if (generation == activityRequestGeneration) activityLoading = false
@@ -1488,7 +1494,7 @@ fun DeskTwinApp(
                                 val expectedFingerprint = scannedPairingFingerprint
                                     ?.takeIf { scannedPairingCode == code }
                                 if (expectedFingerprint == null) {
-                                    pairingError = "لأمان الاقتران، امسح QR الحالي من DeskTwin على الكمبيوتر. الإدخال اليدوي للكود وحده لم يعد مدعومًا."
+                                    pairingError = localizedText(selectedLanguage, "لأمان الاقتران، امسح QR الحالي من DeskTwin على الكمبيوتر. الإدخال اليدوي للكود وحده لم يعد مدعومًا.", "For secure pairing, scan the current QR code from DeskTwin on the computer. Entering the code alone is no longer supported.")
                                     return@launch
                                 }
                                 val candidates = if (usingDirectQr) scannedPairingDevices else listOf(device)
@@ -1525,7 +1531,7 @@ fun DeskTwinApp(
                                             if (response.isSuccessful && body?.success == true
                                                 && returnedFingerprint != expectedFingerprint
                                             ) {
-                                                pairingError = "تم رفض الاقتران: بصمة شهادة الكمبيوتر لا تطابق QR الممسوح."
+                                                pairingError = localizedText(selectedLanguage, "تم رفض الاقتران: بصمة شهادة الكمبيوتر لا تطابق QR الممسوح.", "Pairing was rejected because the computer certificate does not match the scanned QR code.")
                                                 return@launch
                                             }
                                             if (usingDirectQr && response.code() in setOf(404, 405, 501)) {
@@ -1535,7 +1541,7 @@ fun DeskTwinApp(
                                                 DeskTwinConnection.disconnect()
                                                 continue
                                             }
-                                            pairingError = "${body?.error_code ?: "PAIRING_FAILED"}: ${body?.error ?: "فشل التوصيل"}\nالحل: ${body?.solution ?: "تأكد من الكود وأنشئ كودًا جديدًا"}"
+                                            pairingError = "${body?.error_code ?: "PAIRING_FAILED"}: " + localizedText(selectedLanguage, "فشل الاقتران. تحقق من الكود وأنشئ كودًا جديدًا.", "Pairing failed. Check the code and generate a new one.")
                                         }
                                         return@launch
                                     } catch (e: CancellationException) {
@@ -1551,17 +1557,17 @@ fun DeskTwinApp(
                                     // surface the actual network failure for a direct retry.
                                     scannedPairingDevices = emptyList()
                                     selectedDevice = candidates.firstOrNull() ?: device
-                                    pairingError = lastNetworkError?.let(::classifyPairingError)
-                                        ?: "تعذر الوصول لعناوين QR. تحقق من الشبكة وجدار حماية Windows ثم أعد المحاولة."
+                                    pairingError = lastNetworkError?.let { classifyPairingError(it, selectedLanguage) }
+                                        ?: localizedText(selectedLanguage, "تعذر الوصول لعناوين QR. تحقق من الشبكة وجدار حماية Windows ثم أعد المحاولة.", "Could not reach the QR addresses. Check the network and Windows Firewall, then try again.")
                                 } else {
-                                    pairingError = lastNetworkError?.let(::classifyPairingError)
-                                        ?: "لم يصل الهاتف إلى أي عنوان أعلنه الكمبيوتر. تأكد من الشبكة نفسها والجدار الناري."
+                                    pairingError = lastNetworkError?.let { classifyPairingError(it, selectedLanguage) }
+                                        ?: localizedText(selectedLanguage, "لم يصل الهاتف إلى أي عنوان أعلنه الكمبيوتر. تأكد من الشبكة نفسها والجدار الناري.", "The phone could not reach any address advertised by the computer. Check the shared network and firewall.")
                                 }
                             } catch (e: CancellationException) {
                                 throw e
                             } catch (e: Exception) {
                                 Log.e("DeskTwinPairing", "Pairing failed", e)
-                                pairingError = classifyPairingError(e)
+                                pairingError = classifyPairingError(e, selectedLanguage)
                             } finally {
                                 isVerifyingCode = false
                             }
@@ -1574,7 +1580,7 @@ fun DeskTwinApp(
         is Screen.UserBinding -> {
             val connected = connectionState as? ConnectionState.Connected
             UserBindingScreen(
-                computerName = connected?.computerName ?: "الكمبيوتر",
+                computerName = connected?.computerName ?: localizedText(selectedLanguage, "الكمبيوتر", "Computer"),
                 isSaving = isSavingUserName,
                 onNameSubmit = { name ->
                     val token = connected?.token
@@ -1672,7 +1678,7 @@ fun DeskTwinApp(
                                 selectedPaths = emptySet()
                                 loadBrowse(token, currentPath)
                             } else {
-                                downloadError = "فشل تنفيذ الحذف الجماعي؛ راجع الصلاحيات والتعارضات وحاول مرة أخرى"
+                                downloadError = localizedText(selectedLanguage, "فشل تنفيذ الحذف الجماعي؛ راجع الصلاحيات والتعارضات وحاول مرة أخرى", "Bulk delete failed. Check permissions and conflicts, then try again.")
                             }
                         }
                     }
@@ -1720,13 +1726,13 @@ fun DeskTwinApp(
                                 if (bulkFileClipboard.isEmpty()) bulkClipboardIsCut = false
                                 loadBrowse(bulkToken, currentPath)
                                 if (result.failed == 0) {
-                                    showSuccess("تم ${if (isMove) "نقل" else "نسخ"} ${result.succeeded} عنصر")
+                                    showSuccess(localizedText(selectedLanguage, "تم ${if (isMove) "نقل" else "نسخ"} ${result.succeeded} عنصر", "${result.succeeded} item(s) ${if (isMove) "moved" else "copied"}."))
                                 } else {
-                                    val firstReason = result.results.firstOrNull { !it.success }?.error ?: "تعارض أو صلاحية"
-                                    downloadError = "تم تنفيذ ${result.succeeded} عملية، وتعذرت ${result.failed}: $firstReason"
+                                    val firstReason = result.results.firstOrNull { !it.success }?.error?.takeUnless { it.any { ch -> ch in '\u0600'..'\u06FF' } } ?: localizedText(selectedLanguage, "تعارض أو صلاحية", "a conflict or permission issue")
+                                    downloadError = localizedText(selectedLanguage, "تم تنفيذ ${result.succeeded} عملية، وتعذرت ${result.failed}: $firstReason", "${result.succeeded} operation(s) completed; ${result.failed} failed: $firstReason")
                                 }
                             } else {
-                                downloadError = "فشل اللصق الجماعي؛ راجع التعارضات والصلاحيات"
+                                downloadError = localizedText(selectedLanguage, "فشل اللصق الجماعي؛ راجع التعارضات والصلاحيات", "Bulk paste failed. Check for conflicts and permissions.")
                             }
                         }
                     } else {
@@ -1753,13 +1759,13 @@ fun DeskTwinApp(
                                     loadBrowse(token, currentPath)
                                     val actualName = response.body()?.destination?.substringAfterLast('\\')?.substringAfterLast('/')
                                     showSuccess(
-                                        if (clip.second) "تم نقل الملف"
-                                        else if (actualName != null && actualName != clip.first.name) "تم النسخ باسم $actualName"
-                                        else "تم نسخ الملف"
+                                        if (clip.second) localizedText(selectedLanguage, "تم نقل الملف", "File moved")
+                                        else if (actualName != null && actualName != clip.first.name) localizedText(selectedLanguage, "تم النسخ باسم $actualName", "Copied as $actualName")
+                                        else localizedText(selectedLanguage, "تم نسخ الملف", "File copied")
                                     )
                                 } else {
-                                    val reason = response?.body()?.error ?: "فشل تنفيذ اللصق في المسار المطلوب."
-                                    showUserError(DeskTwinErrorPresenter.fromHttp(response?.code(), reason))
+                                    val reason = response?.body()?.error?.takeUnless { it.any { ch -> ch in '\u0600'..'\u06FF' } } ?: localizedText(selectedLanguage, "فشل تنفيذ اللصق في المسار المطلوب.", "Could not paste into the selected location.")
+                                    showUserError(DeskTwinErrorPresenter.fromHttp(response?.code(), reason, selectedLanguage))
                                 }
                             } catch (_: Exception) {
                                 // نحفظ Copy/Cut كأمر مؤجل بدل فقدانه عند انقطاع
@@ -1772,7 +1778,7 @@ fun DeskTwinApp(
                                     newValue = destination,
                                     addedAt = System.currentTimeMillis()
                                 ))
-                                downloadError = "الكمبيوتر غير متاح - العملية محفوظة وستُعاد عند الاتصال"
+                                downloadError = localizedText(selectedLanguage, "الكمبيوتر غير متاح - العملية محفوظة وستُعاد عند الاتصال", "The computer is unavailable. This operation is queued and will retry when it reconnects.")
                             }
                         }
                     }
@@ -1805,7 +1811,7 @@ fun DeskTwinApp(
                             val response = api?.getFullTreeSnapshot(active.token)
                             val snapshot = response?.takeIf { it.isSuccessful }?.body()
                             if (snapshot == null) {
-                                showUserError(DeskTwinErrorPresenter.fromHttp(response?.code(), "تعذر تحديث الشجرة؛ أبقينا الاتصال قائمًا"))
+                                showUserError(DeskTwinErrorPresenter.fromHttp(response?.code(), localizedText(selectedLanguage, "تعذر تحديث الشجرة؛ أبقينا الاتصال قائمًا", "Could not refresh the file tree; the connection is still active."), selectedLanguage))
                                 return@launch
                             }
 
@@ -1833,11 +1839,11 @@ fun DeskTwinApp(
                             } else {
                                 loadBrowse("", currentPath)
                             }
-                            showSuccess("تم تحديث الشجرة وحفظها ثم قطع الاتصال")
+                            showSuccess(localizedText(selectedLanguage, "تم تحديث الشجرة وحفظها ثم قطع الاتصال", "The file tree was refreshed and saved, then disconnected."))
                         } catch (cancelled: CancellationException) {
                             throw cancelled
                         } catch (error: Exception) {
-                            showUserError(DeskTwinErrorPresenter.fromThrowable(error))
+                            showUserError(DeskTwinErrorPresenter.fromThrowable(error, selectedLanguage))
                         } finally {
                             isDisconnecting = false
                         }
@@ -1977,7 +1983,7 @@ fun DeskTwinApp(
             val connected = connectionState as? ConnectionState.Connected
             UploadScreen(
                 isConnected = connected != null,
-                targetFolderLabel = uploadTargetFolder.ifEmpty { "الرئيسية" },
+                targetFolderLabel = uploadTargetFolder.ifEmpty { localizedText(selectedLanguage, "الرئيسية", "Home") },
                 pendingUploads = queuedUploads.map {
                     PendingUpload(
                         fileName = it.fileName, sizeBytes = it.sizeBytes,
@@ -2056,7 +2062,7 @@ fun DeskTwinApp(
                                     )
                                     scopeRequestConfirmation = response?.body()?.status == "pending"
                                 } catch (_: Exception) {
-                                    downloadError = "مفيش اتصال دلوقتي - جرّب تاني لما الكمبيوتر يبقى متاح"
+                                    downloadError = localizedText(selectedLanguage, "مفيش اتصال دلوقتي - جرّب تاني لما الكمبيوتر يبقى متاح", "The computer is offline. Try again when it is available.")
                                 }
                             }
                         }
@@ -2107,11 +2113,11 @@ fun DeskTwinApp(
                                 val response = currentApi()?.createFileSavepoint(token, file.id)
                                 if (response?.isSuccessful == true) {
                                     fileVersions = currentApi()?.listFileVersions(token, file.id)?.body().orEmpty()
-                                    downloadError = "تم حفظ نسخة من الملف"
+                                    downloadError = localizedText(selectedLanguage, "تم حفظ نسخة من الملف", "A copy of the file was saved.")
                                 } else {
-                                    showUserError(DeskTwinErrorPresenter.fromHttp(response?.code(), "تعذر حفظ النسخة"))
+                                    showUserError(DeskTwinErrorPresenter.fromHttp(response?.code(), localizedText(selectedLanguage, "تعذر حفظ النسخة", "Could not save this version."), selectedLanguage))
                                 }
-                            } catch (e: Exception) { showUserError(DeskTwinErrorPresenter.fromThrowable(e)) }
+                            } catch (e: Exception) { showUserError(DeskTwinErrorPresenter.fromThrowable(e, selectedLanguage)) }
                         }
                     },
                     onRestoreVersion = { version ->
@@ -2121,11 +2127,11 @@ fun DeskTwinApp(
                                 val response = currentApi()?.restoreFileVersion(token, file.id, version.id)
                                 if (response?.isSuccessful == true) {
                                     fileVersions = currentApi()?.listFileVersions(token, file.id)?.body().orEmpty()
-                                    downloadError = "تمت استعادة النسخة ${version.version_number}"
+                                    downloadError = localizedText(selectedLanguage, "تمت استعادة النسخة ${version.version_number}", "Version ${version.version_number} was restored.")
                                 } else {
-                                    showUserError(DeskTwinErrorPresenter.fromHttp(response?.code(), "تعذر استعادة النسخة"))
+                                    showUserError(DeskTwinErrorPresenter.fromHttp(response?.code(), localizedText(selectedLanguage, "تعذر استعادة النسخة", "Could not restore this version."), selectedLanguage))
                                 }
-                            } catch (e: Exception) { showUserError(DeskTwinErrorPresenter.fromThrowable(e)) }
+                            } catch (e: Exception) { showUserError(DeskTwinErrorPresenter.fromThrowable(e, selectedLanguage)) }
                         }
                     },
                     onOpenTemporaryClick = {
@@ -2143,7 +2149,7 @@ fun DeskTwinApp(
                                             downloadProgress = if (total > 0) read.toFloat() / total.toFloat() else 0f
                                             com.desktwin.app.notifications.TransferNotifications.updateProgress(
                                                 context, "download_${file.id}", file.name, isUpload = false,
-                                                fraction = downloadProgress ?: 0f
+                                                fraction = downloadProgress ?: 0f, language = selectedLanguage
                                             )
                                         }
                                     )
@@ -2164,13 +2170,13 @@ fun DeskTwinApp(
                                         }
                                     }
                                     result.onFailure {
-                                        downloadError = it.message ?: "فشل التحميل"
+                                        downloadError = localizedText(selectedLanguage, "فشل التحميل", "Download failed.")
                                         com.desktwin.app.notifications.TransferNotifications.completeFailure(
                                             context, "download_${file.id}", file.name, isUpload = false
                                         )
                                     }
                                 } else {
-                                    downloadError = "مفيش اتصال بالكمبيوتر دلوقتي"
+                                    downloadError = localizedText(selectedLanguage, "مفيش اتصال بالكمبيوتر دلوقتي", "The computer is offline.")
                                 }
                                 isDownloadingFile = false
                                 downloadProgress = null
@@ -2195,7 +2201,7 @@ fun DeskTwinApp(
                                             downloadProgress = if (total > 0) read.toFloat() / total.toFloat() else 0f
                                             com.desktwin.app.notifications.TransferNotifications.updateProgress(
                                                 context, "download_${file.id}", file.name, isUpload = false,
-                                                fraction = downloadProgress ?: 0f
+                                                fraction = downloadProgress ?: 0f, language = selectedLanguage
                                             )
                                         }
                                     )
@@ -2206,13 +2212,13 @@ fun DeskTwinApp(
                                         )
                                     }
                                     result.onFailure {
-                                        downloadError = it.message ?: "فشل التحميل الدائم"
+                                        downloadError = localizedText(selectedLanguage, "فشل التحميل الدائم", "Could not save a permanent copy.")
                                         com.desktwin.app.notifications.TransferNotifications.completeFailure(
                                             context, "download_${file.id}", file.name, isUpload = false
                                         )
                                     }
                                 } else {
-                                    downloadError = "مفيش اتصال بالكمبيوتر دلوقتي"
+                                    downloadError = localizedText(selectedLanguage, "مفيش اتصال بالكمبيوتر دلوقتي", "The computer is offline.")
                                 }
                                 isDownloadingFile = false
                                 downloadProgress = null
@@ -2223,7 +2229,7 @@ fun DeskTwinApp(
                         if (connected != null && selectedDevice != null) {
                             pushScreen(Screen.VideoStream(file.id, file.name, file.path))
                         } else {
-                            showUserError(DeskTwinErrorPresenter.fromThrowable(IllegalStateException("البث يحتاج اتصالًا مباشرًا بالكمبيوتر")))
+                            showUserError(DeskTwinErrorPresenter.fromThrowable(IllegalStateException("stream requires direct computer connection"), selectedLanguage))
                         }
                     },
                     onMakeLinkedClick = {
@@ -2254,9 +2260,9 @@ fun DeskTwinApp(
                                 try {
                                     val response = currentApi()?.showInExplorer(token, file.id, file.path)
                                     if (response == null || !response.isSuccessful || response.body()?.success != true) {
-                                        showUserError(DeskTwinErrorPresenter.fromHttp(response?.code(), "تعذر فتح مكان الملف على الكمبيوتر."))
+                                        showUserError(DeskTwinErrorPresenter.fromHttp(response?.code(), localizedText(selectedLanguage, "تعذر فتح مكان الملف على الكمبيوتر.", "Could not show the file on the computer."), selectedLanguage))
                                     } else {
-                                        showSuccess("تم فتح مكان الملف وتحديده على الكمبيوتر")
+                                        showSuccess(localizedText(selectedLanguage, "تم فتح مكان الملف وتحديده على الكمبيوتر", "The file location was opened and selected on the computer."))
                                     }
                                 } catch (_: Exception) {
                                     // مفيش queueing هنا عن قصد - الأمر ده مفيدش لو
@@ -2264,7 +2270,7 @@ fun DeskTwinApp(
                                     // قاعد قدام الكمبيوتر أصلاً وقتها)، عكس أوامر
                                     // زي SET_AVAILABILITY اللي نتيجتها تفضل صحيحة
                                     // مهما اتأخر التنفيذ.
-                                    downloadError = "مفيش اتصال بالكمبيوتر دلوقتي"
+                                    downloadError = localizedText(selectedLanguage, "مفيش اتصال بالكمبيوتر دلوقتي", "The computer is offline.")
                                 }
                             }
                         }
@@ -2276,12 +2282,12 @@ fun DeskTwinApp(
                                 try {
                                     val response = currentApi()?.openFileOnComputer(token, file.id, file.path)
                                     if (response == null || !response.isSuccessful || response.body()?.success != true) {
-                                        showUserError(DeskTwinErrorPresenter.fromHttp(response?.code(), "تعذر تشغيل الملف على الكمبيوتر."))
+                                    showUserError(DeskTwinErrorPresenter.fromHttp(response?.code(), localizedText(selectedLanguage, "تعذر تشغيل الملف على الكمبيوتر.", "Could not open the file on the computer."), selectedLanguage))
                                     } else {
-                                        showSuccess("تم تشغيل الملف على الكمبيوتر")
+                                        showSuccess(localizedText(selectedLanguage, "تم تشغيل الملف على الكمبيوتر", "The file was opened on the computer."))
                                     }
                                 } catch (e: Exception) {
-                                    showUserError(DeskTwinErrorPresenter.fromThrowable(e))
+                                    showUserError(DeskTwinErrorPresenter.fromThrowable(e, selectedLanguage))
                                 }
                             }
                         }
@@ -2292,14 +2298,14 @@ fun DeskTwinApp(
                             try {
                                 val response = currentApi()?.setWallpaper(token, file.id)
                                 if (response?.isSuccessful == true && response.body()?.success == true) {
-                                    showSuccess("تم تعيين الصورة كخلفية للكمبيوتر")
+                                    showSuccess(localizedText(selectedLanguage, "تم تعيين الصورة كخلفية للكمبيوتر", "The image was set as the computer wallpaper."))
                                 } else {
-                                    showUserError(DeskTwinErrorPresenter.fromHttp(response?.code(), "تعذر تعيين الصورة كخلفية"))
+                                    showUserError(DeskTwinErrorPresenter.fromHttp(response?.code(), localizedText(selectedLanguage, "تعذر تعيين الصورة كخلفية", "Could not set the image as wallpaper."), selectedLanguage))
                                 }
-                            } catch (e: Exception) { downloadError = "تعذر تعيين الخلفية: ${e.message}" }
+                            } catch (e: Exception) { downloadError = localizedText(selectedLanguage, "تعذر تعيين الخلفية: ${e.message}", "Could not set the wallpaper.") }
                         }
                     },
-                    onAddShortcutClick = { (context as? MainActivity)?.addFileShortcut(file) }
+                    onAddShortcutClick = { (context as? MainActivity)?.addFileShortcut(file, selectedLanguage) }
                 )
             }
         }
@@ -2310,7 +2316,7 @@ fun DeskTwinApp(
             if (connected != null && device != null) {
                 VideoStreamScreen(device.ip, device.port, connected.token, currentScreen.fileId, currentScreen.path, currentScreen.name, onBack = { popScreen() })
             } else {
-                LaunchedEffect(Unit) { showUserError(DeskTwinErrorPresenter.fromThrowable(IllegalStateException("انقطع اتصال البث بالكمبيوتر"))); popScreen() }
+                            LaunchedEffect(Unit) { showUserError(DeskTwinErrorPresenter.fromThrowable(IllegalStateException("stream connection to computer was lost"), selectedLanguage)); popScreen() }
             }
         }
 
@@ -2336,14 +2342,14 @@ fun DeskTwinApp(
                                 if (response?.isSuccessful == true) {
                                     searchResults = response.body() ?: emptyList()
                                 } else {
-                                    searchError = "تعذر البحث في الكمبيوتر (HTTP ${response?.code() ?: "لا توجد استجابة"})."
+                                    searchError = localizedText(selectedLanguage, "تعذر البحث في الكمبيوتر (HTTP ${response?.code() ?: "لا توجد استجابة"}).", "Could not search the computer (HTTP ${response?.code() ?: "no response"}).")
                                 }
                             }
                         } catch (cancelled: CancellationException) {
                             throw cancelled
                         } catch (error: Exception) {
                             if (requestSequence == searchRequestSequence) {
-                                searchError = "تعذر الاتصال أثناء البحث: ${error.message ?: "خطأ غير معروف"}"
+                                searchError = localizedText(selectedLanguage, "تعذر الاتصال أثناء البحث.", "Could not connect while searching.")
                             }
                         } finally {
                             if (requestSequence == searchRequestSequence) isSearching2 = false
@@ -2351,7 +2357,7 @@ fun DeskTwinApp(
                     }
                 } else {
                     isSearching2 = false
-                    if (query.isNotBlank()) searchError = "اتصل بالكمبيوتر أولًا للبحث في ملفاته."
+                    if (query.isNotBlank()) searchError = localizedText(selectedLanguage, "اتصل بالكمبيوتر أولًا للبحث في ملفاته.", "Connect to the computer before searching its files.")
                 }
             }
             SearchScreen(
@@ -2371,7 +2377,7 @@ fun DeskTwinApp(
         is Screen.Settings -> {
             val connected = connectionState as? ConnectionState.Connected
             SettingsScreen(
-                computerName = connected?.computerName ?: "غير متصل",
+                computerName = connected?.computerName ?: localizedText(selectedLanguage, "غير متصل", "Offline"),
                 isConnected = connected != null,
                 onDisconnectClick = {
                     scope.launch {
@@ -2438,7 +2444,7 @@ fun DeskTwinApp(
                         type = "text/plain"
                         putExtra(Intent.EXTRA_STREAM, uri)
                         addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                    }, "مشاركة سجل DeskTwin"))
+                    }, localizedText(selectedLanguage, "مشاركة سجل DeskTwin", "Share DeskTwin log")))
                 }
                 ,fileViewMode = selectedFileViewMode
                 ,onFileViewModeChange = { mode -> scope.launch { preferences.saveFileViewMode(mode) } }
@@ -2506,8 +2512,8 @@ fun DeskTwinApp(
                         try {
                             val response = currentApi()?.resolveConflict(token, conflict.id, ResolveConflictRequest(resolution))
                             if (response?.isSuccessful == true) conflicts = currentApi()?.listConflicts(token)?.body().orEmpty()
-                            else showUserError(DeskTwinErrorPresenter.fromHttp(response?.code(), "تعذر حل التعارض"))
-                        } catch (e: Exception) { showUserError(DeskTwinErrorPresenter.fromThrowable(e)) }
+                            else showUserError(DeskTwinErrorPresenter.fromHttp(response?.code(), localizedText(selectedLanguage, "تعذر حل التعارض", "Could not resolve the conflict."), selectedLanguage))
+                        } catch (e: Exception) { showUserError(DeskTwinErrorPresenter.fromThrowable(e, selectedLanguage)) }
                     }
                 },
                 onBack = { popScreen() }
@@ -2581,8 +2587,8 @@ fun DeskTwinApp(
                         val response = currentApi()?.permanentlyDeleteFromTrash(c.token, RestoreRequest(item.original_path))
                         if (response?.isSuccessful == true) {
                             trashItems = currentApi()?.listTrash(c.token)?.body().orEmpty()
-                            showSuccess("تم الحذف النهائي من سلة المحذوفات")
-                        } else showUserError(DeskTwinErrorPresenter.fromHttp(response?.code(), "تعذر الحذف النهائي"))
+                            showSuccess(localizedText(selectedLanguage, "تم الحذف النهائي من سلة المحذوفات", "The item was permanently deleted from the Recycle Bin."))
+                        } else showUserError(DeskTwinErrorPresenter.fromHttp(response?.code(), localizedText(selectedLanguage, "تعذر الحذف النهائي", "Could not permanently delete the item."), selectedLanguage))
                     } }
                 }
             )
@@ -2604,11 +2610,11 @@ fun DeskTwinApp(
                         // save it after local review but never executes it.
                         val response = currentApi()?.requestApproval(token, ApprovalRequest("command_draft", file_path = path, new_value = payload))
                         if (response?.isSuccessful == true) {
-                            showSuccess("تم إرسال الأمر للمراجعة والموافقة على الكمبيوتر")
+                            showSuccess(localizedText(selectedLanguage, "تم إرسال الأمر للمراجعة والموافقة على الكمبيوتر", "The command was sent to the computer for review and approval."))
                         } else {
-                            showUserError(DeskTwinErrorPresenter.fromHttp(response?.code(), "تعذر إرسال طلب تنفيذ الأمر"))
+                            showUserError(DeskTwinErrorPresenter.fromHttp(response?.code(), localizedText(selectedLanguage, "تعذر إرسال طلب تنفيذ الأمر", "Could not send the command request."), selectedLanguage))
                         }
-                    } catch (e: Exception) { downloadError = "تعذر إرسال طلب تنفيذ الأمر: ${e.message}" }
+                    } catch (e: Exception) { downloadError = localizedText(selectedLanguage, "تعذر إرسال طلب تنفيذ الأمر: ${e.message}", "Could not send the command request.") }
                 }
             }
         }
@@ -2623,15 +2629,15 @@ fun DeskTwinApp(
                         try {
                             val response = currentApi()?.deviceAction(token, DeviceActionRequest(action))
                             if (response == null || !response.isSuccessful || response.body()?.success != true) {
-                                showUserError(DeskTwinErrorPresenter.fromHttp(response?.code(), "أمر جهاز مرفوض: الهاتف يحتاج مستوى ثقة كامل."))
+                                showUserError(DeskTwinErrorPresenter.fromHttp(response?.code(), localizedText(selectedLanguage, "أمر جهاز مرفوض: الهاتف يحتاج مستوى ثقة كامل.", "Device command denied: this phone needs Full trust."), selectedLanguage))
                             } else {
                                 if (action == "refresh") {
                                     if (isAtRoot) loadHome(token) else loadBrowse(token, currentPath)
                                 }
-                                showSuccess(response.body()?.message ?: "تم تنفيذ أمر الكمبيوتر")
+                                showSuccess(response.body()?.message?.takeUnless { it.any { ch -> ch in '\u0600'..'\u06FF' } } ?: localizedText(selectedLanguage, "تم تنفيذ أمر الكمبيوتر", "The computer command completed."))
                             }
                         } catch (e: Exception) {
-                            showUserError(DeskTwinErrorPresenter.fromThrowable(e))
+                            showUserError(DeskTwinErrorPresenter.fromThrowable(e, selectedLanguage))
                         }
                     }
                 }
@@ -2717,7 +2723,7 @@ fun DeskTwinApp(
                                                 onProgress = { read, total ->
                                                     val fraction = if (total > 0) read.toFloat() / total.toFloat() else 0f
                                                     com.desktwin.app.notifications.TransferNotifications.updateProgress(
-                                                        context, "offline_dl_${cmd.id}", name, isUpload = false, fraction = fraction
+                                                        context, "offline_dl_${cmd.id}", name, isUpload = false, fraction = fraction, language = selectedLanguage
                                                     )
                                                 }
                                             ).onSuccess {
@@ -2732,10 +2738,10 @@ fun DeskTwinApp(
                                         }
                                     }
                             } else {
-                                downloadError = "فشل إرسال الأوامر للكمبيوتر - جرّب تاني"
+                                downloadError = localizedText(selectedLanguage, "فشل إرسال الأوامر للكمبيوتر - جرّب تاني", "Could not send the commands to the computer. Try again.")
                             }
                         } catch (_: Exception) {
-                            downloadError = "مفيش اتصال بالكمبيوتر دلوقتي - الأوامر لسه محفوظة عندك"
+                            downloadError = localizedText(selectedLanguage, "مفيش اتصال بالكمبيوتر دلوقتي - الأوامر لسه محفوظة عندك", "The computer is offline. Your commands are still queued.")
                         }
                         isSubmittingBatch = false
                     }
@@ -2749,7 +2755,7 @@ fun DeskTwinApp(
                                 val resumed = currentApi()?.resumeOfflineBatch(connected.token, batch.batch_id)
                                 resumed?.body()?.let { activeBatchResult = it }
                             } catch (_: Exception) {
-                                downloadError = "فشل استكمال التنفيذ"
+                                downloadError = localizedText(selectedLanguage, "فشل استكمال التنفيذ", "Could not resume the operation.")
                             }
                         }
                     }
@@ -2798,7 +2804,7 @@ fun DeskTwinApp(
     // downloadError وpermanentSaveConfirmation بيتصفروا تلقائيًا بعد العرض.
     downloadError?.let { message ->
         val details = actionableError ?: DeskTwinErrorPresenter.fromThrowable(
-            IllegalStateException(message)
+            IllegalStateException(message), selectedLanguage
         )
         AlertDialog(
             onDismissRequest = { downloadError = null; actionableError = null },
@@ -2807,7 +2813,7 @@ fun DeskTwinApp(
                 Column {
                     Text(details.message)
                     Spacer(modifier = Modifier.height(10.dp))
-                    Text("الحل المقترح: ${details.solution}", style = MaterialTheme.typography.bodyMedium)
+                    Text(localizedText(selectedLanguage, "الحل المقترح: ${details.solution}", "Suggested solution: ${details.solution}"), style = MaterialTheme.typography.bodyMedium)
                 }
             },
             confirmButton = {
@@ -2833,12 +2839,12 @@ fun DeskTwinApp(
                     actionableError = null
                 }) {
                     Text(when (details.action) {
-                        ErrorAction.RECONNECT -> "إعادة الاتصال"
-                        ErrorAction.PAIR_AGAIN -> "إعادة الاقتران"
-                        ErrorAction.REQUEST_ACCESS -> "طلب الوصول"
-                        ErrorAction.REFRESH -> "تحديث القائمة"
-                        ErrorAction.RETRY -> "إعادة المحاولة"
-                        ErrorAction.NONE -> "تمام"
+                        ErrorAction.RECONNECT -> localizedText(selectedLanguage, "إعادة الاتصال", "Reconnect")
+                        ErrorAction.PAIR_AGAIN -> localizedText(selectedLanguage, "إعادة الاقتران", "Pair again")
+                        ErrorAction.REQUEST_ACCESS -> localizedText(selectedLanguage, "طلب الوصول", "Request access")
+                        ErrorAction.REFRESH -> localizedText(selectedLanguage, "تحديث القائمة", "Refresh list")
+                        ErrorAction.RETRY -> localizedText(selectedLanguage, "إعادة المحاولة", "Try again")
+                        ErrorAction.NONE -> localizedText(selectedLanguage, "تمام", "OK")
                     })
                 }
             }
@@ -2848,10 +2854,10 @@ fun DeskTwinApp(
     permanentSaveConfirmation?.let { fileName ->
         AlertDialog(
             onDismissRequest = { permanentSaveConfirmation = null },
-            title = { Text("تم الحفظ") },
-            text = { Text("\"$fileName\" اتحفظ بشكل دائم على التليفون. النسخة الأصلية لسه موجودة على الكمبيوتر زي ما هي.") },
+            title = { Text(localizedText(selectedLanguage, "تم الحفظ", "Saved")) },
+            text = { Text(localizedText(selectedLanguage, "\"$fileName\" اتحفظ بشكل دائم على التليفون. النسخة الأصلية لسه موجودة على الكمبيوتر زي ما هي.", "\"$fileName\" was saved permanently on the phone. The original remains unchanged on the computer.")) },
             confirmButton = {
-                TextButton(onClick = { permanentSaveConfirmation = null }) { Text("تمام") }
+                TextButton(onClick = { permanentSaveConfirmation = null }) { Text(localizedText(selectedLanguage, "تمام", "OK")) }
             }
         )
     }
@@ -2859,10 +2865,10 @@ fun DeskTwinApp(
     scopeRequestConfirmation?.let {
         AlertDialog(
             onDismissRequest = { scopeRequestConfirmation = null },
-            title = { Text("اتبعت الطلب") },
-            text = { Text("طلب مشاركة المجلد اتبعت للكمبيوتر. المجلد هيظهر عندك بمجرد الموافقة من هناك.") },
+            title = { Text(localizedText(selectedLanguage, "اتبعت الطلب", "Request sent")) },
+            text = { Text(localizedText(selectedLanguage, "طلب مشاركة المجلد اتبعت للكمبيوتر. المجلد هيظهر عندك بمجرد الموافقة من هناك.", "The folder sharing request was sent to the computer. The folder will appear after it is approved there.")) },
             confirmButton = {
-                TextButton(onClick = { scopeRequestConfirmation = null }) { Text("تمام") }
+                TextButton(onClick = { scopeRequestConfirmation = null }) { Text(localizedText(selectedLanguage, "تمام", "OK")) }
             }
         )
     }
@@ -2870,10 +2876,10 @@ fun DeskTwinApp(
     if (incompleteTransfers.isNotEmpty()) {
         AlertDialog(
             onDismissRequest = { incompleteTransfers = emptyList() },
-            title = { Text("فيه ملفات كبيرة ناقصة") },
+            title = { Text(localizedText(selectedLanguage, "فيه ملفات كبيرة ناقصة", "Incomplete large files")) },
             text = {
                 Column {
-                    Text("رفع الملفات دي اتقطع قبل ما يكمل - هتكمل تلقائيًا من نفس النقطة أول ما تحاول ترفعها تاني:")
+                    Text(localizedText(selectedLanguage, "رفع الملفات دي اتقطع قبل ما يكمل - هتكمل تلقائيًا من نفس النقطة أول ما تحاول ترفعها تاني:", "These uploads stopped before completion. They will resume from the same point when you try again:"))
                     Spacer(modifier = Modifier.height(8.dp))
                     incompleteTransfers.forEach { t ->
                         val percent = if (t.total_size_bytes > 0) (t.bytes_received * 100 / t.total_size_bytes).toInt() else 0
@@ -2883,7 +2889,7 @@ fun DeskTwinApp(
                 }
             },
             confirmButton = {
-                TextButton(onClick = { incompleteTransfers = emptyList() }) { Text("تمام") }
+                TextButton(onClick = { incompleteTransfers = emptyList() }) { Text(localizedText(selectedLanguage, "تمام", "OK")) }
             }
         )
     }

@@ -2441,18 +2441,20 @@ public sealed class PhoneAssistantWorkspacePage : Page
 
     private static string ExplainPhoneFileError(string error)
     {
+        var isArabic = System.Text.RegularExpressions.Regex.IsMatch(error, "[\\u0600-\\u06FF]");
+        if (WinUIStrings.Language == "ar" && isArabic) return error;
         var explanation = error switch
         {
-            var value when value.Contains("انتهت مهلة رد الهاتف", StringComparison.Ordinal) => "Phone did not answer before timeout. Check the file-channel connection and whether the phone's document provider is still responding.",
-            var value when value.Contains("لم يتم اختيار مجلد للهاتف", StringComparison.Ordinal) || value.Contains("لم يتم اختيار مجلد الهاتف", StringComparison.Ordinal) => "Phone storage access was not granted, or its saved folder permission was revoked. Re-select the folder on the phone.",
-            var value when value.Contains("المسار غير موجود", StringComparison.Ordinal) || value.Contains("الملف غير موجود", StringComparison.Ordinal) => "The item may have been moved, renamed, deleted, or become unavailable through its document provider. Refresh the listing.",
-            var value when value.Contains("المسار يتجاوز مجلد الهاتف", StringComparison.Ordinal) => "The request was rejected because it tried to leave the phone's authorized folder. This is a security boundary.",
-            var value when value.Contains("معاينة الفيديو تتطلب Android 10 أو أحدث", StringComparison.Ordinal) => "This phone cannot create a video thumbnail through the current API level. The original video was not downloaded.",
-            var value when value.Contains("المعاينة متاحة للصور والفيديو فقط", StringComparison.Ordinal) => "This file type has no thumbnail preview. Open or download it instead.",
-            var value when value.Contains("مزود ملفات الهاتف لا يدعم", StringComparison.Ordinal) => "The selected document provider does not support this file operation.",
-            _ => "Phone-file request failed. Check the phone connection, its folder permission, and the document provider.",
+            var value when value.Contains("انتهت مهلة رد الهاتف", StringComparison.Ordinal) => WinUIStrings.Translate("انتهت مهلة رد الهاتف. تحقق من الاتصال ومزود الملفات على الهاتف.", "Phone did not answer before timeout. Check its connection and document provider."),
+            var value when value.Contains("لم يتم اختيار مجلد للهاتف", StringComparison.Ordinal) || value.Contains("لم يتم اختيار مجلد الهاتف", StringComparison.Ordinal) => WinUIStrings.Translate("لم يتم منح الوصول إلى تخزين الهاتف أو انتهى إذن المجلد. اختر المجلد مجددًا على الهاتف.", "Phone storage access was not granted, or its folder permission expired. Re-select the folder on the phone."),
+            var value when value.Contains("المسار غير موجود", StringComparison.Ordinal) || value.Contains("الملف غير موجود", StringComparison.Ordinal) => WinUIStrings.Translate("قد يكون العنصر قد نُقل أو أُعيدت تسميته أو حُذف. حدّث القائمة.", "The item may have been moved, renamed, deleted, or become unavailable. Refresh the listing."),
+            var value when value.Contains("المسار يتجاوز مجلد الهاتف", StringComparison.Ordinal) => WinUIStrings.Translate("رُفض الطلب لأنه تجاوز المجلد الذي سمح به الهاتف.", "The request was rejected because it left the folder authorized by the phone."),
+            var value when value.Contains("معاينة الفيديو تتطلب Android 10 أو أحدث", StringComparison.Ordinal) => WinUIStrings.Translate("يتطلب إنشاء معاينة الفيديو Android 10 أو أحدث. لم يتم تنزيل الفيديو الأصلي.", "Video thumbnails require Android 10 or later. The original video was not downloaded."),
+            var value when value.Contains("المعاينة متاحة للصور والفيديو فقط", StringComparison.Ordinal) => WinUIStrings.Translate("لا تتوفر معاينة لهذا النوع من الملفات. افتحه أو نزّله.", "This file type has no thumbnail preview. Open or download it instead."),
+            var value when value.Contains("مزود ملفات الهاتف لا يدعم", StringComparison.Ordinal) => WinUIStrings.Translate("مزود الملفات المحدد لا يدعم هذه العملية.", "The selected document provider does not support this file operation."),
+            _ => WinUIStrings.Translate("تعذر تنفيذ طلب ملفات الهاتف. تحقق من الاتصال وإذن المجلد ومزود الملفات.", "Phone-file request failed. Check the connection, folder permission, and document provider."),
         };
-        return $"{explanation}\nDetails: {error}";
+        return WinUIStrings.Language == "ar" || isArabic ? explanation : $"{explanation}\nDetails: {error}";
     }
 
     private static string FormatByteCount(long bytes) => bytes >= 1024L * 1024 * 1024

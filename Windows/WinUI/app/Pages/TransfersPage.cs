@@ -95,7 +95,7 @@ public sealed class TransfersPage : Page
         }
         catch (Exception ex)
         {
-            _message.Text = WinUIStrings.Translate("تعذر تحميل حالة النقل: ", "Could not load transfer status: ") + ex.Message;
+            _message.Text = WinUIStrings.Translate("تعذر تحميل حالة النقل: ", "Could not load transfer status: ") + WinUIStrings.SafeMessage(ex.Message, "راجع سجل التشخيص لمزيد من التفاصيل.", "See diagnostics for details.");
         }
         finally
         {

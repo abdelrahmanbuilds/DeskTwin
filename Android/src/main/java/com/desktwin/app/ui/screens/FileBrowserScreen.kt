@@ -309,7 +309,7 @@ fun FileBrowserScreen(
                     .padding(16.dp)
                     .height(50.dp)
             ) {
-                Text("اختار هذا المجلد")
+                Text(tr("اختار هذا المجلد", "Choose this folder"))
             }
         } else if (!isPickerMode) {
             Row(
@@ -321,7 +321,7 @@ fun FileBrowserScreen(
                         onClick = onPasteClick,
                         containerColor = MaterialTheme.colorScheme.secondaryContainer
                     ) {
-                        Icon(Icons.Default.ContentPaste, contentDescription = "لصق هنا")
+                        Icon(Icons.Default.ContentPaste, contentDescription = tr("لصق هنا", "Paste here"))
                     }
                 }
                 if (activeTheme.artStyle == ThemeArtStyle.APPLE) {
@@ -383,13 +383,13 @@ private fun PickerTopBar(currentPath: String, canGoBack: Boolean, onBackClick: (
     ) {
         if (canGoBack) {
             IconButton(onClick = onBackClick) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "رجوع")
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = tr("رجوع", "Back"))
             }
         } else {
             Spacer(modifier = Modifier.width(48.dp))
         }
         Column {
-            Text("اختار مكان الحفظ", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+            Text(tr("اختار مكان الحفظ", "Choose a save location"), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
             Text(currentPath, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1)
         }
     }
@@ -422,7 +422,7 @@ private fun RootView(
             if (specialFolders.isNotEmpty()) {
                 item(span = { GridItemSpan(maxLineSpan) }) { RootSectionTitle(tr("مجلدات الكمبيوتر", "Computer folders")) }
                 items(specialFolders, key = { "special:${it.path}" }) { folder ->
-                    RootTile(iconForSpecialFolder(folder.name), translateSpecialFolder(folder.name)) { onSpecialFolderClick(folder) }
+                    RootTile(iconForSpecialFolder(folder.name), folder.name) { onSpecialFolderClick(folder) }
                 }
             }
             if (drives.isNotEmpty()) {
@@ -457,7 +457,7 @@ private fun RootView(
             items(specialFolders, key = { it.path }) { folder ->
                 ShortcutRow(
                     icon = iconForSpecialFolder(folder.name),
-                    name = translateSpecialFolder(folder.name),
+                    name = folder.name,
                     onClick = { onSpecialFolderClick(folder) }
                 )
             }
@@ -563,16 +563,6 @@ private fun iconForSpecialFolder(name: String): ImageVector = when (name) {
     "Videos" -> Icons.Default.Movie
     "Music" -> Icons.Default.MusicNote
     else -> Icons.Default.Folder
-}
-
-private fun translateSpecialFolder(name: String): String = when (name) {
-    "Desktop" -> "سطح المكتب"
-    "Downloads" -> "التنزيلات"
-    "Documents" -> "المستندات"
-    "Pictures" -> "الصور"
-    "Videos" -> "الفيديوهات"
-    "Music" -> "الموسيقى"
-    else -> name
 }
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -1042,28 +1032,31 @@ private fun contentForFolder(path: String, map: Map<String, FolderContent>): Fol
     return map[key] ?: map[path] ?: FolderContent.Empty
 }
 
+@Composable
 private fun folderSubtitle(content: FolderContent?): String = when (content) {
-    null, FolderContent.Empty -> "مجلد"
-    is FolderContent.Single -> "مجلد • " + kindLabel(content.kind)
-    is FolderContent.Mixed -> "مجلد • ملفات متنوعة"
+    null, FolderContent.Empty -> tr("مجلد", "Folder")
+    is FolderContent.Single -> tr("مجلد • ", "Folder • ") + kindLabel(content.kind)
+    is FolderContent.Mixed -> tr("مجلد • ملفات متنوعة", "Folder • mixed files")
 }
 
+@Composable
 private fun kindLabel(kind: com.desktwin.app.ui.icons.FileKind): String = when (kind) {
-    com.desktwin.app.ui.icons.FileKind.IMAGE -> "صور"
-    com.desktwin.app.ui.icons.FileKind.VIDEO -> "فيديوهات"
-    com.desktwin.app.ui.icons.FileKind.AUDIO -> "صوتيات"
-    com.desktwin.app.ui.icons.FileKind.DOCUMENT -> "مستندات"
-    com.desktwin.app.ui.icons.FileKind.SPREADSHEET -> "جداول"
-    com.desktwin.app.ui.icons.FileKind.PRESENTATION -> "عروض"
-    com.desktwin.app.ui.icons.FileKind.ARCHIVE -> "ملفات مضغوطة"
-    com.desktwin.app.ui.icons.FileKind.CODE -> "أكواد"
+    com.desktwin.app.ui.icons.FileKind.IMAGE -> tr("صور", "Images")
+    com.desktwin.app.ui.icons.FileKind.VIDEO -> tr("فيديوهات", "Videos")
+    com.desktwin.app.ui.icons.FileKind.AUDIO -> tr("صوتيات", "Audio")
+    com.desktwin.app.ui.icons.FileKind.DOCUMENT -> tr("مستندات", "Documents")
+    com.desktwin.app.ui.icons.FileKind.SPREADSHEET -> tr("جداول", "Spreadsheets")
+    com.desktwin.app.ui.icons.FileKind.PRESENTATION -> tr("عروض", "Presentations")
+    com.desktwin.app.ui.icons.FileKind.ARCHIVE -> tr("ملفات مضغوطة", "Archives")
+    com.desktwin.app.ui.icons.FileKind.CODE -> tr("أكواد", "Code")
     com.desktwin.app.ui.icons.FileKind.PDF -> "PDF"
-    com.desktwin.app.ui.icons.FileKind.OTHER -> "ملفات"
+    com.desktwin.app.ui.icons.FileKind.OTHER -> tr("ملفات", "Files")
 }
 
+@Composable
 private fun fileTypeLabel(extension: String?): String {
     val clean = extension?.trim()?.trimStart('.')?.uppercase().orEmpty()
-    return if (clean.isEmpty()) "ملف" else "ملف $clean"
+    return if (clean.isEmpty()) tr("ملف", "File") else tr("ملف $clean", "File $clean")
 }
 
 /** "2026-04-01T00:19:..." -> "2026-04-01 00:19". لو التنسيق مش متوقع نرجّع أول 16 حرف. */

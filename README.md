@@ -26,6 +26,8 @@ These direct links always point to the files attached to GitHub's latest testing
 
 [Open the latest preview page](https://github.com/abdelrahmanbuilds/DeskTwin/releases/latest) · [Browse all preview versions](https://github.com/abdelrahmanbuilds/DeskTwin/releases)
 
+Each platform has one download; language is chosen inside the app, not through separate English and Arabic files. English is the default on a fresh install, and Arabic is available from **Settings → Language**. DeskTwin remembers a language the user has already selected. File names, folder names, paths, and user-entered text stay exactly as stored and are never translated.
+
 ### First connection
 
 1. Put the phone and PC on the same trusted local network.

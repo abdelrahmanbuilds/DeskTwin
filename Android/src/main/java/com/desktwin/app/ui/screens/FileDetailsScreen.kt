@@ -122,11 +122,11 @@ fun FileDetailsScreen(
             ) {
                 Icon(Icons.Default.PlayCircle, contentDescription = null)
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("مشاهدة على الهاتف — بلا تنزيل")
+                Text(tr("مشاهدة على الهاتف — بلا تنزيل", "Watch on phone — no download"))
             }
             Text(
-                if (largeVideo) "مناسب للفيديوهات الكبيرة؛ لا يحجز مساحة على الهاتف."
-                else "تشغيل عبر الشبكة دون حفظ نسخة على الهاتف.",
+                if (largeVideo) tr("مناسب للفيديوهات الكبيرة؛ لا يحجز مساحة على الهاتف.", "Recommended for large videos; it does not use phone storage.")
+                else tr("تشغيل عبر الشبكة دون حفظ نسخة على الهاتف.", "Stream over the network without saving a copy to the phone."),
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 style = MaterialTheme.typography.labelSmall
             )
@@ -141,7 +141,7 @@ fun FileDetailsScreen(
             modifier = Modifier.fillMaxWidth().height(50.dp)
         ) {
             if (isDownloading) {
-                Text(downloadProgress?.let { "جارٍ التحميل ${(it * 100).toInt()}%" } ?: "جارٍ التحميل…", color = androidx.compose.ui.graphics.Color.White)
+                Text(downloadProgress?.let { tr("جارٍ التحميل ${(it * 100).toInt()}%", "Downloading ${(it * 100).toInt()}%") } ?: tr("جارٍ التحميل…", "Downloading…"), color = androidx.compose.ui.graphics.Color.White)
             } else {
                 Icon(Icons.Default.Visibility, contentDescription = null)
                 Spacer(modifier = Modifier.width(8.dp))
@@ -157,7 +157,7 @@ fun FileDetailsScreen(
         )
 
         if (isDownloading && downloadProgress != null) {
-            Text("التقدم: ${(downloadProgress * 100).toInt()}%", modifier = Modifier.padding(top = 6.dp), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
+            Text(tr("التقدم: ${(downloadProgress * 100).toInt()}%", "Progress: ${(downloadProgress * 100).toInt()}%"), modifier = Modifier.padding(top = 6.dp), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
         }
 
         Spacer(modifier = Modifier.height(10.dp))
@@ -170,7 +170,7 @@ fun FileDetailsScreen(
         ) {
             Icon(Icons.Default.CloudDownload, contentDescription = null)
             Spacer(modifier = Modifier.width(8.dp))
-            Text("نزّله دايمًا على التليفون")
+            Text(tr("نزّله دايمًا على التليفون", "Keep on phone"))
         }
 
         Spacer(modifier = Modifier.height(10.dp))
@@ -179,7 +179,7 @@ fun FileDetailsScreen(
             onClick = onOpenOnComputerClick,
             modifier = Modifier.fillMaxWidth().height(50.dp),
             colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
-        ) { Text("شغّله على الكمبيوتر") }
+        ) { Text(tr("شغّله على الكمبيوتر", "Open on computer")) }
 
         Spacer(modifier = Modifier.height(12.dp))
         Surface(
@@ -192,25 +192,25 @@ fun FileDetailsScreen(
                     TextButton(onClick = onMakeLinkedClick) {
                         Icon(Icons.Default.Share, contentDescription = null)
                         Spacer(Modifier.width(6.dp))
-                        Text("مشاركة")
+                        Text(tr("مشاركة", "Share"))
                     }
                     TextButton(onClick = onShowInExplorerClick) {
                         Icon(Icons.Default.FolderOpen, contentDescription = null)
                         Spacer(Modifier.width(6.dp))
-                        Text("مكانه بالكمبيوتر")
+                        Text(tr("مكانه بالكمبيوتر", "Show on computer"))
                     }
                 }
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
                     TextButton(onClick = onAddShortcutClick) {
                         Icon(Icons.Default.Home, contentDescription = null)
                         Spacer(Modifier.width(6.dp))
-                        Text("اختصار")
+                        Text(tr("اختصار", "Shortcut"))
                     }
                     if (isImage) {
                         TextButton(onClick = onSetWallpaperClick) {
                             Icon(Icons.Default.Wallpaper, contentDescription = null)
                             Spacer(Modifier.width(6.dp))
-                            Text("خلفية")
+                            Text(tr("خلفية", "Wallpaper"))
                         }
                     }
                 }
@@ -228,8 +228,8 @@ fun FileDetailsScreen(
             Row(Modifier.padding(horizontal = 16.dp, vertical = 14.dp), verticalAlignment = Alignment.CenterVertically) {
                 Icon(Icons.Default.History, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
                 Spacer(Modifier.width(10.dp))
-                Text("النسخ السابقة", style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
-                Text(if (versionsExpanded) "إخفاء" else "عرض", color = MaterialTheme.colorScheme.primary)
+                Text(tr("النسخ السابقة", "Previous versions"), style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
+                Text(if (versionsExpanded) tr("إخفاء", "Hide") else tr("عرض", "View"), color = MaterialTheme.colorScheme.primary)
             }
         }
         if (versionsExpanded) {
@@ -258,23 +258,23 @@ private fun VersionHistoryCard(
             Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                 Icon(Icons.Default.History, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
                 Spacer(Modifier.width(8.dp))
-                Text("نسخ سابقة", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold, modifier = Modifier.weight(1f))
-                IconButton(onClick = onRefresh) { Icon(Icons.Default.Refresh, contentDescription = "تحديث النسخ") }
+                Text(tr("نسخ سابقة", "Previous versions"), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold, modifier = Modifier.weight(1f))
+                IconButton(onClick = onRefresh) { Icon(Icons.Default.Refresh, contentDescription = tr("تحديث النسخ", "Refresh versions")) }
             }
-            if (loading) Text("جارٍ تحميل النسخ السابقة…", modifier = Modifier.padding(vertical = 8.dp), color = MaterialTheme.colorScheme.onSurfaceVariant)
+            if (loading) Text(tr("جارٍ تحميل النسخ السابقة…", "Loading previous versions…"), modifier = Modifier.padding(vertical = 8.dp), color = MaterialTheme.colorScheme.onSurfaceVariant)
             if (!loading && versions.isEmpty()) {
-                Text("مفيش نسخ محفوظة لهذا الملف", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(tr("مفيش نسخ محفوظة لهذا الملف", "No saved versions for this file"), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             } else {
                 versions.take(3).forEach { version ->
                     Column(Modifier.padding(vertical = 5.dp)) {
-                        Text("نسخة ${version.version_number} · ${formatSize(version.size_bytes)}", style = MaterialTheme.typography.bodyMedium)
+                        Text(tr("نسخة ${version.version_number} · ${formatSize(version.size_bytes)}", "Version ${version.version_number} · ${formatSize(version.size_bytes)}"), style = MaterialTheme.typography.bodyMedium)
                         Text(version.created_at.replace("T", " ").take(19), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        TextButton(onClick = { onRestore(version) }) { Text("استعادة هذه النسخة") }
+                        TextButton(onClick = { onRestore(version) }) { Text(tr("استعادة هذه النسخة", "Restore this version")) }
                     }
                 }
-                if (versions.size > 3) Text("+ ${versions.size - 3} نسخ أخرى", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                if (versions.size > 3) Text(tr("+ ${versions.size - 3} نسخ أخرى", "+ ${versions.size - 3} more versions"), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
-            TextButton(onClick = onCreateSavepoint, modifier = Modifier.align(androidx.compose.ui.Alignment.End)) { Text("احفظ نسخة الآن") }
+            TextButton(onClick = onCreateSavepoint, modifier = Modifier.align(androidx.compose.ui.Alignment.End)) { Text(tr("احفظ نسخة الآن", "Save a version now")) }
         }
     }
 }
@@ -307,12 +307,12 @@ private fun MetadataCard(file: FileMetadata) {
         modifier = Modifier.fillMaxWidth()
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            MetadataRow("الحجم", formatSize(file.size_bytes))
-            MetadataRow("آخر تعديل", file.modified_at?.take(16)?.replace("T", " ") ?: "-")
-            MetadataRow("الإصدار", "v${file.version}")
-            MetadataRow("المشروع", file.project ?: "-")
-            MetadataRow("الحالة", file.sync_state)
-            MetadataRow("طريقة المزامنة", syncModeLabel(file.sync_mode))
+            MetadataRow(tr("الحجم", "Size"), formatSize(file.size_bytes))
+            MetadataRow(tr("آخر تعديل", "Modified"), file.modified_at?.take(16)?.replace("T", " ") ?: "-")
+            MetadataRow(tr("الإصدار", "Version"), "v${file.version}")
+            MetadataRow(tr("المشروع", "Project"), file.project ?: "-")
+            MetadataRow(tr("الحالة", "Status"), syncModeLabel(file.sync_state))
+            MetadataRow(tr("طريقة المزامنة", "Sync mode"), syncModeLabel(file.sync_mode))
         }
     }
 }
@@ -340,7 +340,7 @@ private fun InfoBanner() {
             Icon(Icons.Default.Info, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(18.dp))
             Spacer(modifier = Modifier.width(8.dp))
             Text(
-                "الملف موجود على الكمبيوتر بس دلوقتي. المعلومات اللي فوق مجانية، لكن فتحه هيحمّله مؤقتًا.",
+                tr("الملف موجود على الكمبيوتر بس دلوقتي. المعلومات اللي فوق مجانية، لكن فتحه هيحمّله مؤقتًا.", "This file is currently only on the computer. The details above are available now; opening it downloads a temporary copy."),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurface
             )
@@ -348,11 +348,12 @@ private fun InfoBanner() {
     }
 }
 
+@Composable
 private fun syncModeLabel(mode: String): String = when (mode) {
-    "METADATA_ONLY" -> "معلومات فقط"
-    "LINKED" -> "متاح على الجهازين"
-    "PHONE_ONLY" -> "على التليفون فقط"
-    "PC_ONLY" -> "على الكمبيوتر فقط"
+    "METADATA_ONLY" -> tr("معلومات فقط", "Details only")
+    "LINKED" -> tr("متاح على الجهازين", "Available on both devices")
+    "PHONE_ONLY" -> tr("على التليفون فقط", "Phone only")
+    "PC_ONLY" -> tr("على الكمبيوتر فقط", "Computer only")
     else -> mode
 }
 

@@ -43,7 +43,7 @@ fun SearchScreen(
             verticalAlignment = Alignment.CenterVertically
         ) {
             IconButton(onClick = onBackClick) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "رجوع", tint = MaterialTheme.colorScheme.onSurface)
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = tr("رجوع", "Back"), tint = MaterialTheme.colorScheme.onSurface)
             }
             OutlinedTextField(
                 value = query,
@@ -51,12 +51,12 @@ fun SearchScreen(
                     query = it
                     onQueryChange(it)
                 },
-                placeholder = { Text("دور على أي حاجة...") },
+                placeholder = { Text(tr("دور على أي حاجة...", "Search files…")) },
                 leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
                 trailingIcon = {
                     if (query.isNotEmpty()) {
                         IconButton(onClick = { query = ""; onQueryChange("") }) {
-                            Icon(Icons.Default.Close, contentDescription = "مسح البحث")
+                            Icon(Icons.Default.Close, contentDescription = tr("مسح البحث", "Clear search"))
                         }
                     }
                 },
@@ -70,7 +70,7 @@ fun SearchScreen(
 
         if (isSearching) {
             Text(
-                "جارٍ البحث…",
+                tr("جارٍ البحث…", "Searching…"),
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.primary
@@ -80,21 +80,21 @@ fun SearchScreen(
         when {
             query.isBlank() -> SearchEmptyState(
                 icon = Icons.AutoMirrored.Filled.ManageSearch,
-                title = "ابحث في الكمبيوتر",
-                subtitle = "اكتب اسم الملف أو جزءًا من المسار للوصول له بسرعة."
+                title = tr("ابحث في الكمبيوتر", "Search this computer"),
+                subtitle = tr("اكتب اسم الملف أو جزءًا من المسار للوصول له بسرعة.", "Enter a file name or part of a path.")
             )
             errorMessage != null -> SearchErrorState(errorMessage, onRetry)
             results.isEmpty() && !isSearching -> SearchEmptyState(
                 icon = Icons.Default.SearchOff,
-                title = "مفيش نتائج لـ \"$query\"",
-                subtitle = "جرّب كلمة أقصر أو اسمًا مختلفًا."
+                title = tr("مفيش نتائج لـ \"$query\"", "No results for \"$query\""),
+                subtitle = tr("جرّب كلمة أقصر أو اسمًا مختلفًا.", "Try a shorter search or a different name.")
             )
             else -> LazyColumn(
                 contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 item {
-                    Text("${results.size} نتيجة", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(tr("${results.size} نتيجة", "${results.size} results"), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
                 items(results, key = { it.id }) { file ->
                     DeskTwinCard(modifier = Modifier.fillMaxWidth().clickable { onFileClick(file) }) {
@@ -135,9 +135,9 @@ private fun SearchErrorState(message: String, onRetry: () -> Unit) {
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 Icon(Icons.Default.CloudOff, contentDescription = null, modifier = Modifier.size(36.dp), tint = MaterialTheme.colorScheme.error)
-                Text("تعذر إكمال البحث", style = MaterialTheme.typography.titleMedium)
+                Text(tr("تعذر إكمال البحث", "Search could not be completed"), style = MaterialTheme.typography.titleMedium)
                 Text(message, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                TextButton(onClick = onRetry) { Text("إعادة المحاولة") }
+                TextButton(onClick = onRetry) { Text(tr("إعادة المحاولة", "Try again")) }
             }
         }
     }

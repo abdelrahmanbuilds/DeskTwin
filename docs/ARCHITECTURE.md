@@ -46,6 +46,7 @@ All source paths below are relative to `Android/src/main/java/com/desktwin/app/`
 | `notifications/` | Transfer and chat notifications. | Notification content or notification lifecycle. |
 | `ui/screens/` | Compose screens for pairing, browsing, transfers, chat, settings, and other app features. | Screen-level interaction and presentation. |
 | `ui/theme/` | Shared design system, theme presets, typography, and components. | Colors, fonts, shared visual components, theme behavior. |
+| `ui/theme/DeskTwinCopy.kt` | Compose language context and the small bilingual `tr(ar, en)` helper. | Add or adjust Android screen copy in both languages. |
 | `ui/icons/` | File-type and explorer icon mapping. | Icons and file-kind presentation. |
 | `Android/app/build.gradle.kts` | Android plugin configuration, SDK levels, dependencies, source roots, and app version overrides. | Android library/plugin or packaging changes. |
 | `Android/src/main/AndroidManifest.xml` | Android app components and declared capabilities. | App-level manifest behavior; review permission and exported-component impact. |
@@ -65,6 +66,7 @@ Paths are relative to `Windows/WinUI/`.
 | `app/App.xaml` and `app/App.xaml.cs` | WinUI application initialization and lifetime. | Startup, shutdown, app-wide resources. |
 | `app/MainWindow.xaml` and `app/MainWindow.xaml.cs` | Main window layout and navigation shell. | Window chrome, navigation destinations, top-level layout. |
 | `app/Pages/` | Feature pages: chat, integration health, phone assistant/files, settings, and transfers. | Page-specific UI and interactions. |
+| `app/MainWindow.xaml.cs` (`WinUIStrings`) | Shared WinUI language state, English translations, and RTL/LTR direction updates. | Add corresponding English text when adding Arabic UI copy. |
 | `app/DesktopBridge.cs` | Starts and communicates with the Python host over JSON Lines. | Desktop-to-service commands, process lifetime, bridge serialization. |
 | `app/PhoneVideoStreamProxy.cs` | Desktop-side proxy for phone video streaming scenarios. | Streaming proxy behavior and lifecycle. |
 | `app/TaskbarTrayIcon.cs` | Taskbar notification-area integration. | Tray icon and menu behavior. |

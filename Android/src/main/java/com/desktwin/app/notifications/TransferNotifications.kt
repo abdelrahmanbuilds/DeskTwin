@@ -24,14 +24,16 @@ object TransferNotifications {
      * القناة نفسها مايحصلش غير مرة واحدة، لكن النداء آمن يتكرر (النظام
      * بيتجاهل تكرار نفس الـ channel ID من غير أي تأثير أو خطأ).
      */
-    fun ensureChannel(context: Context) {
+    fun ensureChannel(context: Context, language: String = "en") {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
-                CHANNEL_ID, "نقل الملفات", NotificationManager.IMPORTANCE_LOW
+                CHANNEL_ID,
+                if (language == "ar") "نقل الملفات" else "File transfers",
+                NotificationManager.IMPORTANCE_LOW
                 // IMPORTANCE_LOW عشان الإشعار يظهر من غير صوت أو اهتزاز مع
                 // كل تحديث نسبة - مزعج جدًا لو كل 1% غيّر صوّت أو رجّ التليفون.
             ).apply {
-                description = "تقدّم رفع وتحميل الملفات بين التليفون والكمبيوتر"
+                description = if (language == "ar") "تقدّم رفع وتحميل الملفات بين التليفون والكمبيوتر" else "File upload and download progress between your phone and computer"
             }
             val manager = context.getSystemService(NotificationManager::class.java)
             manager.createNotificationChannel(channel)
@@ -45,14 +47,18 @@ object TransferNotifications {
      * الحالات: بداية، تحديث النسبة، نجاح، وفشل. `key` لازم يكون نفسه
      * طول عمر العملية الواحدة عشان الإشعار يتحدث في مكانه مش يتكرر.
      */
-    fun updateProgress(context: Context, key: String, fileName: String, isUpload: Boolean, fraction: Float) {
+    fun updateProgress(context: Context, key: String, fileName: String, isUpload: Boolean, fraction: Float, language: String = "en") {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             val granted = context.checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) ==
                 android.content.pm.PackageManager.PERMISSION_GRANTED
             if (!granted) return  // مفيش صلاحية - نتجاهل بصمت، مش لازم نعطل النقل نفسه
         }
 
-        val title = if (isUpload) "بيترفع للكمبيوتر" else "بيتحمّل من الكمبيوتر"
+        val title = if (language == "ar") {
+            if (isUpload) "بيترفع للكمبيوتر" else "بيتحمّل من الكمبيوتر"
+        } else {
+            if (isUpload) "Uploading to computer" else "Downloading from computer"
+        }
         val percent = (fraction * 100).toInt()
 
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)

@@ -25,7 +25,7 @@ public sealed class DesktopBridge : IAsyncDisposable
         var sourceHost = Path.Combine(root, "WinUI", "bridge", "winui_host.py");
         var useBundledHost = File.Exists(bundledHost);
         if (!useBundledHost && !File.Exists(sourceHost))
-            throw new FileNotFoundException("ملف تشغيل خدمة DeskTwin غير موجود بجوار المشروع.", sourceHost);
+            throw new FileNotFoundException(WinUIStrings.Translate("ملف تشغيل خدمة DeskTwin غير موجود بجوار المشروع.", "The DeskTwin service host was not found beside the app."), sourceHost);
 
         var python = Environment.GetEnvironmentVariable("DESKTWIN_PYTHON") ?? "python";
         _process = new Process
@@ -60,7 +60,7 @@ public sealed class DesktopBridge : IAsyncDisposable
         CancellationToken cancellationToken = default,
         TimeSpan? requestTimeoutOverride = null)
     {
-        if (_process.HasExited) throw new InvalidOperationException("خدمة DeskTwin المحلية متوقفة.");
+        if (_process.HasExited) throw new InvalidOperationException(WinUIStrings.Translate("خدمة DeskTwin المحلية متوقفة.", "The DeskTwin local service has stopped."));
         var effectiveTimeout = requestTimeoutOverride ?? RequestTimeout;
         using var requestTimeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         requestTimeout.CancelAfter(effectiveTimeout);
@@ -84,7 +84,7 @@ public sealed class DesktopBridge : IAsyncDisposable
         }
         catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
         {
-            throw new TimeoutException($"انتهت مهلة طلب DeskTwin: {command} بعد {effectiveTimeout.TotalSeconds:0} ثانية.");
+            throw new TimeoutException(WinUIStrings.Translate($"انتهت مهلة طلب DeskTwin: {command} بعد {effectiveTimeout.TotalSeconds:0} ثانية.", $"DeskTwin request '{command}' timed out after {effectiveTimeout.TotalSeconds:0} seconds."));
         }
         finally { _pending.TryRemove(id, out _); }
     }
@@ -106,7 +106,7 @@ public sealed class DesktopBridge : IAsyncDisposable
                 if (message["ok"]?.GetValue<bool>() == true)
                     completion.TrySetResult(message["result"]?.DeepClone());
                 else
-                    completion.TrySetException(new InvalidOperationException(message["error"]?.GetValue<string>() ?? "حدث خطأ في خدمة DeskTwin."));
+                    completion.TrySetException(new InvalidOperationException(message["error"]?.GetValue<string>() ?? WinUIStrings.Translate("حدث خطأ في خدمة DeskTwin.", "The DeskTwin service returned an error.")));
             }
         }
         catch (Exception ex)
@@ -125,7 +125,7 @@ public sealed class DesktopBridge : IAsyncDisposable
 
     private void FailPendingRequests()
     {
-        var message = $"خدمة DeskTwin المحلية أُغلقت (رمز الخروج {_process.ExitCode}).";
+        var message = WinUIStrings.Translate($"خدمة DeskTwin المحلية أُغلقت (رمز الخروج {_process.ExitCode}).", $"The DeskTwin local service stopped (exit code {_process.ExitCode}).");
         foreach (var request in _pending.Values)
             request.TrySetException(new InvalidOperationException(message));
         _pending.Clear();
@@ -144,7 +144,7 @@ public sealed class DesktopBridge : IAsyncDisposable
 
         for (var directory = new DirectoryInfo(AppContext.BaseDirectory); directory is not null; directory = directory.Parent)
             if (HasBridgeHost(directory.FullName)) return directory.FullName;
-        throw new DirectoryNotFoundException("لم أجد خدمة DeskTwin المحلية. عيّن DESKTWIN_ROOT لمسار المشروع.");
+        throw new DirectoryNotFoundException(WinUIStrings.Translate("لم أجد خدمة DeskTwin المحلية. عيّن DESKTWIN_ROOT لمسار المشروع.", "The DeskTwin local service was not found. Set DESKTWIN_ROOT to the project path."));
     }
 
     private static bool HasBridgeHost(string root) =>

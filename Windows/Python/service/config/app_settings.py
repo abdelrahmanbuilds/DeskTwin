@@ -17,7 +17,7 @@ APP_SETTINGS_PATH = os.path.join(PROJECT_ROOT, "config", "app_settings.json")
 @dataclass
 class AppSettings:
     theme_mode: str = "dark"           # "dark" أو "light"
-    language: str = "ar"                # "ar" أو "en" - واجهة فقط
+    language: str = "en"                # "ar" أو "en" - واجهة فقط
     reduce_motion: bool = False
     intro_mode: str = "auto"  # auto, manual, off
     custom_intro_video: str = ""
