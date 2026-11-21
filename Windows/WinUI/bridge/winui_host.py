@@ -15,7 +15,7 @@ import threading
 import traceback
 from io import BytesIO
 
-ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+ROOT = os.path.abspath(os.environ.get("DESKTWIN_ROOT") or os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 sys.path.insert(0, ROOT)
 sys.path.insert(0, os.path.join(ROOT, "Python", "service"))
 PHONE_FILE_ACTIONS = frozenset({"roots", "refresh", "catalog", "media_info", "open", "thumbnail", "rename", "delete", "copy", "trash_list", "restore", "trash_delete"})

@@ -6,7 +6,7 @@ import time
 import uuid
 import subprocess
 
-PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
+PROJECT_ROOT = os.path.abspath(os.environ.get("DESKTWIN_ROOT") or os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))))
 TRASH_DIR = os.path.join(PROJECT_ROOT, "data", "trash")
 
 

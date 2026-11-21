@@ -2317,7 +2317,7 @@ def get_activity(limit: int = Query(30, ge=1, le=100), token: str = Depends(requ
 # جدول file_versions كان موجود في الـ schema من البداية بدون أي endpoint
 # يستخدمه فعليًا - هذا أول تطبيق حقيقي له.
 
-PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+PROJECT_ROOT = os.path.abspath(os.environ.get("DESKTWIN_ROOT") or os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))))
 VERSIONS_STORAGE_DIR = os.path.join(PROJECT_ROOT, "database", "file_versions_storage")
 
 

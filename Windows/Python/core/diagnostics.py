@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import logging
 import logging.handlers
+import os
 import re
 import time
 import uuid
@@ -39,7 +40,7 @@ def initialize(log_dir: str | Path | None = None) -> None:
     global _INITIALIZED
     if _INITIALIZED:
         return
-    project_root = Path(__file__).resolve().parents[2]
+    project_root = Path(os.environ.get("DESKTWIN_ROOT") or Path(__file__).resolve().parents[2])
     target = Path(log_dir) if log_dir else project_root / "data" / "logs"
     target.mkdir(parents=True, exist_ok=True)
     handler = logging.handlers.RotatingFileHandler(
@@ -75,7 +76,7 @@ def record_exception(stage: str, error: BaseException, operation: str | None = N
 
 def run_preflight(project_root: str | Path | None = None) -> list[str]:
     """Return actionable warnings before startup; never mutates user data."""
-    root = Path(project_root) if project_root else Path(__file__).resolve().parents[2]
+    root = Path(project_root or os.environ.get("DESKTWIN_ROOT") or Path(__file__).resolve().parents[2])
     warnings: list[str] = []
     checks = {
         "config": root / "config" / "config.json",

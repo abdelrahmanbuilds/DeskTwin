@@ -20,28 +20,27 @@ Create a new pairing QR code in the Windows app and scan it with DeskTwin for An
 
     dotnet build WinUI/app/DeskTwin.WinUI.csproj --configuration Release
 
-From the repository root, Windows/scripts/Build-Release.ps1 creates a ZIP under dist/. The target PC needs Python 3.11 and the .NET 8 Desktop Runtime; the included launcher prepares the Python dependencies on first run. See docs/RELEASING.md for GitHub releases.
+From the repository root, `Windows/scripts/Build-Release.ps1` creates a self-contained Windows ZIP under `dist/`. The build machine needs Python 3.11, the .NET 8 SDK, and Visual Studio Build Tools with the x64 Visual C++ runtime files. These are build-time requirements only; the ZIP bundles the Python host and packages, .NET runtime, WinUI runtime, and Visual C++ runtime for users. See `docs/RELEASING.md` for GitHub releases.
 
 ## Run a downloaded testing preview
 
 1. Extract `DeskTwin-Windows-win-x64.zip`.
 2. Double-click `Start-DeskTwin.bat`.
 
-The launcher checks for Python 3.11 and the .NET 8 Desktop Runtime, then prepares the Python environment and starts DeskTwin. The first launch downloads the pinned Python packages and can take a few minutes; later launches check for package updates. If a requirement is missing, the launcher prints a setup link. The app itself pairs and transfers files over the local network and does not need a cloud account.
+The application starts directly from the extracted folder. The testing ZIP does not require users to install Python, .NET Desktop Runtime, or Python packages, and first launch does not download runtime libraries. The app pairs and transfers files over the local network and does not need a cloud account.
 
 ## Troubleshooting
 
-- If the launcher says Python is missing, install Python 3.11 for Windows, enable the Python launcher during setup, then double-click the batch file again.
-- If the launcher says the .NET runtime is missing, install the .NET 8 Desktop Runtime and retry.
-- Python package setup needs internet access. If it fails, check the connection and launch again.
+- Keep the extracted folder intact; the EXE uses the bundled runtime files next to it.
+- If Windows SmartScreen shows an unfamiliar-app notice, verify that the ZIP came from the DeskTwin GitHub testing release before choosing whether to run it.
 - If the app opens but pairing fails, put both devices on the same trusted Wi-Fi network and check that Windows Firewall allows DeskTwin on that network. Guest Wi-Fi, VPNs, or Wi-Fi client isolation can block local connections.
 - The phone can browse only Windows folders selected for sharing in the app.
 
 ## Dependencies
 
-- WinUI app: .NET 8 and Microsoft.WindowsAppSDK 2.5.1, restored through NuGet
-- Local service and bridge: Python requirements in Python/dependencies/
-- Python package versions are pinned by the requirements files
+- Development: .NET 8 SDK, Python 3.11+, and packages in `Python/dependencies/`
+- Testing ZIP: bundled .NET, WinUI, Python, and application dependencies; no user-side runtime installation
+- Python package versions are pinned in the requirements files
 
 ## Data and permissions
 

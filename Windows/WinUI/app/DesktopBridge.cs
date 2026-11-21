@@ -21,17 +21,19 @@ public sealed class DesktopBridge : IAsyncDisposable
     {
         var root = FindProjectRoot();
         ProjectRoot = root;
-        var host = Path.Combine(root, "WinUI", "bridge", "winui_host.py");
-        if (!File.Exists(host))
-            throw new FileNotFoundException("ملف تشغيل خدمة DeskTwin غير موجود بجوار المشروع.", host);
+        var bundledHost = Path.Combine(root, "WinUI", "bridge", "DeskTwinPythonHost", "DeskTwinPythonHost.exe");
+        var sourceHost = Path.Combine(root, "WinUI", "bridge", "winui_host.py");
+        var useBundledHost = File.Exists(bundledHost);
+        if (!useBundledHost && !File.Exists(sourceHost))
+            throw new FileNotFoundException("ملف تشغيل خدمة DeskTwin غير موجود بجوار المشروع.", sourceHost);
 
         var python = Environment.GetEnvironmentVariable("DESKTWIN_PYTHON") ?? "python";
         _process = new Process
         {
             StartInfo = new ProcessStartInfo
             {
-                FileName = python,
-                Arguments = $"-u \"{host}\"",
+                FileName = useBundledHost ? bundledHost : python,
+                Arguments = useBundledHost ? string.Empty : $"-u \"{sourceHost}\"",
                 WorkingDirectory = root,
                 UseShellExecute = false,
                 CreateNoWindow = true,
@@ -43,6 +45,7 @@ public sealed class DesktopBridge : IAsyncDisposable
             },
             EnableRaisingEvents = true,
         };
+        _process.StartInfo.Environment["DESKTWIN_ROOT"] = root;
         _process.StartInfo.Environment["PYTHONUTF8"] = "1";
         _process.StartInfo.Environment["PYTHONIOENCODING"] = "utf-8:backslashreplace";
         _process.Exited += (_, _) => FailPendingRequests();
@@ -136,13 +139,17 @@ public sealed class DesktopBridge : IAsyncDisposable
     private static string FindProjectRoot()
     {
         var configured = Environment.GetEnvironmentVariable("DESKTWIN_ROOT");
-        if (!string.IsNullOrWhiteSpace(configured) && File.Exists(Path.Combine(configured, "WinUI", "bridge", "winui_host.py")))
+        if (!string.IsNullOrWhiteSpace(configured) && HasBridgeHost(configured))
             return Path.GetFullPath(configured);
 
         for (var directory = new DirectoryInfo(AppContext.BaseDirectory); directory is not null; directory = directory.Parent)
-            if (File.Exists(Path.Combine(directory.FullName, "WinUI", "bridge", "winui_host.py"))) return directory.FullName;
-        throw new DirectoryNotFoundException("لم أجد WinUI/bridge/winui_host.py. عيّن DESKTWIN_ROOT لمسار المشروع.");
+            if (HasBridgeHost(directory.FullName)) return directory.FullName;
+        throw new DirectoryNotFoundException("لم أجد خدمة DeskTwin المحلية. عيّن DESKTWIN_ROOT لمسار المشروع.");
     }
+
+    private static bool HasBridgeHost(string root) =>
+        File.Exists(Path.Combine(root, "WinUI", "bridge", "DeskTwinPythonHost", "DeskTwinPythonHost.exe")) ||
+        File.Exists(Path.Combine(root, "WinUI", "bridge", "winui_host.py"));
 
     public async ValueTask DisposeAsync()
     {

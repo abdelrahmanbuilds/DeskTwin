@@ -12,7 +12,7 @@ import os
 from dataclasses import dataclass, field, asdict
 
 
-PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+PROJECT_ROOT = os.path.abspath(os.environ.get("DESKTWIN_ROOT") or os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))))
 DEFAULT_CONFIG_PATH = os.path.join(PROJECT_ROOT, "config", "config.json")
 
 # امتدادات هيتجاهلها الـ scanner افتراضيًا (ملفات نظام / مؤقتة)

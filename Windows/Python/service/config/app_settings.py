@@ -10,7 +10,7 @@ import json
 import os
 from dataclasses import dataclass, asdict
 
-PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+PROJECT_ROOT = os.path.abspath(os.environ.get("DESKTWIN_ROOT") or os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))))
 APP_SETTINGS_PATH = os.path.join(PROJECT_ROOT, "config", "app_settings.json")
 
 

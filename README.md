@@ -9,11 +9,11 @@ DeskTwin connects an Android phone to a Windows PC over your local network. Pair
 | Windows | Android |
 | --- | --- |
 | [**Download DeskTwin for Windows**](https://github.com/abdelrahmanbuilds/DeskTwin/releases/latest/download/DeskTwin-Windows-win-x64.zip) | [**Download the Android testing APK**](https://github.com/abdelrahmanbuilds/DeskTwin/releases/latest/download/DeskTwin-Android-debug.apk) |
-| Extract the ZIP and double-click `Start-DeskTwin.bat`. The first run prepares the Python environment. Python 3.11 and the .NET 8 Desktop Runtime are required. | Open the APK on an Android 8.0 (API 26) or later device and follow Android's install prompts. |
+| Extract the ZIP and double-click `Start-DeskTwin.bat`. The app bundles its runtimes and libraries; no Python or .NET installation is needed. | Open the APK on an Android 8.0 (API 26) or later device and follow Android's install prompts. |
 
 Both devices should be on the same trusted local network. Start DeskTwin on Windows, create a pairing QR code, then scan it in the Android app. Select the Windows folders you want to share; the phone can browse those folders only. DeskTwin does not require a cloud account. The [Windows guide](Windows/README.md#troubleshooting) has help for first launch and connection issues.
 
-**New here?** You only need the download for your device above. The rest of this repository is for people who want to understand or help build DeskTwin.
+**New here?** You only need the download for your device above. The Windows ZIP is self-contained. The Android APK is a debug testing build, not a store release. The rest of this repository is for people who want to understand or help build DeskTwin.
 
 For the security model, see [Security](docs/SECURITY.md). To build from source or contribute, start with [Development guide](docs/DEVELOPMENT.md).
 

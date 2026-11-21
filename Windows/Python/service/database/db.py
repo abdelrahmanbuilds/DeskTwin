@@ -12,7 +12,7 @@ from datetime import datetime, timezone, timedelta
 from contextlib import closing, contextmanager
 
 
-PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+PROJECT_ROOT = os.path.abspath(os.environ.get("DESKTWIN_ROOT") or os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))))
 SCHEMA_PATH = os.path.join(os.path.dirname(__file__), "schema.sql")
 DEFAULT_DB_PATH = os.path.join(PROJECT_ROOT, "database", "desktwin.db")
 

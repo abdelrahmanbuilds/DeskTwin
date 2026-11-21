@@ -33,7 +33,6 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - name: Restore Windows dependencies
-        run: python -m pip install -r Windows/Python/dependencies/requirements-winui.txt
-      - name: Build WinUI app
-        run: dotnet build Windows/WinUI/app/DeskTwin.WinUI.csproj --configuration Release
+      - name: Build self-contained Windows testing package
+        shell: pwsh
+        run: ./Windows/scripts/Build-Release.ps1

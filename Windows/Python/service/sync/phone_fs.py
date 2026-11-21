@@ -17,7 +17,7 @@ _active_uploads: dict[str, dict] = {}
 _events: list[dict] = []
 _event_revision = 0
 _lock = threading.Lock()
-PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
+PROJECT_ROOT = os.path.abspath(os.environ.get("DESKTWIN_ROOT") or os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))))
 _transfer_dir = os.path.join(PROJECT_ROOT, "data", "phone_transfers")
 # Keep Android and service chunk sizes in sync. A 4 MiB payload cuts JSON and
 # Base64 message overhead without requiring multi-frame buffering.
