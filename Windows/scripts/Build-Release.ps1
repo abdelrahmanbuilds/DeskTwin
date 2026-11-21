@@ -21,6 +21,8 @@ if ($LASTEXITCODE -ne 0) { throw "dotnet publish failed with exit code $LASTEXIT
 Copy-Item (Join-Path $repoRoot 'Windows\Python') (Join-Path $windowsRoot 'Python') -Recurse
 Copy-Item (Join-Path $repoRoot 'Windows\WinUI\bridge') (Join-Path $windowsRoot 'WinUI\bridge') -Recurse
 Copy-Item (Join-Path $repoRoot 'Windows\README.md') (Join-Path $windowsRoot 'README.md')
+Copy-Item (Join-Path $repoRoot 'Windows\Start-DeskTwin.bat') $packageRoot
+Copy-Item (Join-Path $repoRoot 'Windows\Start-DeskTwin.ps1') $packageRoot
 
 $zipPath = Join-Path $distRoot 'DeskTwin-Windows-win-x64.zip'
 if (Test-Path -LiteralPath $zipPath) { Remove-Item -LiteralPath $zipPath -Force }

@@ -2,7 +2,9 @@
 
 ## Windows package
 
-The tag workflow publishes a portable Windows ZIP and an Android debug APK as a GitHub prerelease. These builds are for people to try DeskTwin and report issues; they are not Google Play or production releases.
+The tag workflow publishes a Windows ZIP and an Android debug APK as the latest GitHub release. GitHub's “latest” marker makes the direct download links in the root README follow the newest preview. The release title and description label both files as testing previews; they are not production releases, and the APK is not a Google Play release.
+
+The Windows ZIP includes `Start-DeskTwin.bat`. After extracting it, users double-click that file. The launcher checks for Python 3.11 and the .NET 8 Desktop Runtime, creates a local Python environment, installs the pinned dependencies, and starts the app. First launch needs internet access to fetch the Python packages. The Windows guide explains first-run requirements and troubleshooting.
 
 For a local package build, run Windows/scripts/Build-Release.ps1 from the repository root. The output is written under dist/.
 
@@ -16,4 +18,4 @@ The workflow assigns versionName from the tag and uses the GitHub Actions run nu
 
 ## Versioning
 
-Use a vMAJOR.MINOR.PATCH tag after the corresponding changes have landed on main, for example v1.2.0. GitHub Actions creates a prerelease with the matching Windows and Android testing artifacts.
+Use a vMAJOR.MINOR.PATCH tag after the corresponding changes have landed on main, for example v0.1.1. GitHub Actions creates a clearly marked testing preview with the matching Windows and Android artifacts. The release workflow updates the `latest` download links automatically.

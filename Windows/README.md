@@ -20,18 +20,22 @@ Create a new pairing QR code in the Windows app and scan it with DeskTwin for An
 
     dotnet build WinUI/app/DeskTwin.WinUI.csproj --configuration Release
 
-From the repository root, Windows/scripts/Build-Release.ps1 creates a portable ZIP under dist/. The release still requires Python and its listed dependencies on the target PC. See docs/RELEASING.md for GitHub releases.
+From the repository root, Windows/scripts/Build-Release.ps1 creates a ZIP under dist/. The target PC needs Python 3.11 and the .NET 8 Desktop Runtime; the included launcher prepares the Python dependencies on first run. See docs/RELEASING.md for GitHub releases.
 
-## Run a downloaded release package
+## Run a downloaded testing preview
 
-Extract the ZIP and open PowerShell in its Windows directory. Install Python dependencies once, then launch the app:
+1. Extract `DeskTwin-Windows-win-x64.zip`.
+2. Double-click `Start-DeskTwin.bat`.
 
-    py -3.11 -m venv .venv
-    .venv/Scripts/python.exe -m pip install -r Python/dependencies/requirements-winui.txt
-    $env:DESKTWIN_PYTHON = (Resolve-Path .venv/Scripts/python.exe).Path
-    WinUI/app/DeskTwin.WinUI.exe
+The launcher checks for Python 3.11 and the .NET 8 Desktop Runtime, then prepares the Python environment and starts DeskTwin. The first launch downloads the pinned Python packages and can take a few minutes; later launches check for package updates. If a requirement is missing, the launcher prints a setup link. The app itself pairs and transfers files over the local network and does not need a cloud account.
 
-The .NET 8 Desktop Runtime is required. The packaged WinUI executable expects the Python virtual environment to be selected through DESKTWIN_PYTHON as shown above.
+## Troubleshooting
+
+- If the launcher says Python is missing, install Python 3.11 for Windows, enable the Python launcher during setup, then double-click the batch file again.
+- If the launcher says the .NET runtime is missing, install the .NET 8 Desktop Runtime and retry.
+- Python package setup needs internet access. If it fails, check the connection and launch again.
+- If the app opens but pairing fails, put both devices on the same trusted Wi-Fi network and check that Windows Firewall allows DeskTwin on that network. Guest Wi-Fi, VPNs, or Wi-Fi client isolation can block local connections.
+- The phone can browse only Windows folders selected for sharing in the app.
 
 ## Dependencies
 

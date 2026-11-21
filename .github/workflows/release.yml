@@ -37,7 +37,13 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           name: DeskTwin ${{ github.ref_name }} testing preview
-          prerelease: true
+          body: |
+            **Testing preview only.** This Windows package and Android debug APK are provided so people can try DeskTwin and share feedback. They are not production releases, and the APK is not a Google Play release.
+
+            Start here: [repository download guide](https://github.com/abdelrahmanbuilds/DeskTwin#download-desktwin).
+
+            The Android APK uses a temporary debug signing key. Installing a later preview may require uninstalling the previous preview first, which removes its local app data.
+          prerelease: false
           generate_release_notes: true
           files: |
             dist/DeskTwin-Windows-win-x64.zip
