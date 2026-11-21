@@ -40,7 +40,7 @@ jobs:
           body: |
             **Testing preview only.** This Windows package and Android debug APK are provided so people can try DeskTwin and share feedback. They are not production releases, and the APK is not a Google Play release.
 
-            Start here: [repository download guide](https://github.com/abdelrahmanbuilds/DeskTwin#download-desktwin).
+            Start here: [repository download guide](https://github.com/KernelWardenHQ/DeskTwin#download-desktwin).
 
             The Android APK uses a temporary debug signing key. Installing a later preview may require uninstalling the previous preview first, which removes its local app data.
           prerelease: false

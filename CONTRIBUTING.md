@@ -6,7 +6,7 @@ Thanks for taking an interest in DeskTwin. Contributions can improve the app, do
 
 1. Read the [README](README.md) to choose the user, developer, or issue-reporting path.
 2. Read the [architecture and source map](docs/ARCHITECTURE.md) to find the owning module.
-3. Check [open issues](https://github.com/abdelrahmanbuilds/DeskTwin/issues) and pull requests for related work.
+3. Check [open issues](https://github.com/KernelWardenHQ/DeskTwin/issues) and pull requests for related work.
 4. For a substantial or cross-platform change, open an issue first to discuss the scope and protocol impact.
 
 ## Local setup
@@ -25,7 +25,7 @@ Follow [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) for Android Studio, JDK/Androi
 
 ## Reporting bugs and ideas
 
-Use the [issue chooser](https://github.com/abdelrahmanbuilds/DeskTwin/issues/new/choose). Bug reports should include:
+Use the [issue chooser](https://github.com/KernelWardenHQ/DeskTwin/issues/new/choose). Bug reports should include:
 
 - Windows/Android platform, OS version, and DeskTwin preview version or source commit.
 - Expected behavior and what actually happened.
