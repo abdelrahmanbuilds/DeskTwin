@@ -107,7 +107,6 @@ $crtDirectories = Get-ChildItem -Path (Join-Path $redistBase '*\x64\Microsoft.VC
 $crtDirectory = $crtDirectories | Select-Object -First 1
 if (-not $crtDirectory) { throw "The x64 VC runtime folder was not found under $redistBase." }
 Copy-Item -Path (Join-Path $crtDirectory.FullName '*.dll') -Destination $winUiOutput -Force
-Copy-Item -Path (Join-Path $crtDirectory.FullName 'Microsoft.VC143.CRT.manifest') -Destination $winUiOutput -Force
 
 $requiredFiles = @(
     (Join-Path $winUiOutput 'DeskTwin.WinUI.exe'),
