@@ -40,7 +40,7 @@ Android dependencies and versions are declared in Android/app/build.gradle.kts; 
 2. Make the Android, Windows, or documentation change in its owning directory.
 3. Build the changed component using the commands above. Run the relevant service tests with python -m unittest discover -s tests -v from Windows/ when changing Python behavior.
 4. Open a pull request. GitHub Actions builds Android and Windows on each pull request.
-5. After merging a release-ready change, create and push a version tag such as v1.2.0. The release workflow packages Windows and publishes a GitHub Release. Android APK publication additionally needs the signing setup in RELEASING.md.
+5. After merging a release-ready change, create and push a version tag such as v1.2.0. The release workflow publishes a Windows package and Android debug APK as a testing prerelease. See RELEASING.md.
 
 ## Contribution scope
 
