@@ -18,8 +18,11 @@ New-Item -ItemType Directory -Path (Join-Path $windowsRoot 'WinUI\app') -Force |
 dotnet publish (Join-Path $repoRoot 'Windows\WinUI\app\DeskTwin.WinUI.csproj') --configuration Release --runtime win-x64 --self-contained false --output (Join-Path $windowsRoot 'WinUI\app')
 if ($LASTEXITCODE -ne 0) { throw "dotnet publish failed with exit code $LASTEXITCODE" }
 
-Copy-Item (Join-Path $repoRoot 'Windows\Python') (Join-Path $windowsRoot 'Python') -Recurse
+$pythonPackage = Join-Path $windowsRoot 'Python'
+Copy-Item (Join-Path $repoRoot 'Windows\Python') $pythonPackage -Recurse
 Copy-Item (Join-Path $repoRoot 'Windows\WinUI\bridge') (Join-Path $windowsRoot 'WinUI\bridge') -Recurse
+Get-ChildItem -LiteralPath $windowsRoot -Directory -Filter '__pycache__' -Recurse |
+    Remove-Item -Recurse -Force
 Copy-Item (Join-Path $repoRoot 'Windows\README.md') (Join-Path $windowsRoot 'README.md')
 Copy-Item (Join-Path $repoRoot 'Windows\Start-DeskTwin.bat') $packageRoot
 Copy-Item (Join-Path $repoRoot 'Windows\Start-DeskTwin.ps1') $packageRoot
