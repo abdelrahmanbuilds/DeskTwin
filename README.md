@@ -6,6 +6,8 @@ DeskTwin connects an Android phone to a Windows PC over your local network. Pair
 
 ## Download DeskTwin
 
+These are **testing previews** for people who want to try the app. They are not production releases, and the Android APK is not a Google Play release.
+
 | Windows | Android |
 | --- | --- |
 | [**Download DeskTwin for Windows**](https://github.com/abdelrahmanbuilds/DeskTwin/releases/latest/download/DeskTwin-Windows-win-x64.zip) | [**Download the Android testing APK**](https://github.com/abdelrahmanbuilds/DeskTwin/releases/latest/download/DeskTwin-Android-debug.apk) |
@@ -13,13 +15,17 @@ DeskTwin connects an Android phone to a Windows PC over your local network. Pair
 
 Both devices should be on the same trusted local network. Start DeskTwin on Windows, create a pairing QR code, then scan it in the Android app. Select the Windows folders you want to share; the phone can browse those folders only. DeskTwin does not require a cloud account. The [Windows guide](Windows/README.md#troubleshooting) has help for first launch and connection issues.
 
-**New here?** You only need the download for your device above. The Windows ZIP is self-contained. The Android APK is a debug testing build, not a store release. The rest of this repository is for people who want to understand or help build DeskTwin.
-
 For the security model, see [Security](docs/SECURITY.md). To build from source or contribute, start with [Development guide](docs/DEVELOPMENT.md).
 
-## See how DeskTwin is built
+## I want to develop DeskTwin
 
-- [Build workflow runs](https://github.com/abdelrahmanbuilds/DeskTwin/actions/workflows/ci.yml) — checks the Windows app and assembles the Android debug app on pushes and pull requests.
+Use the source code in this repository, not the packaged Windows ZIP or Android APK. Open [`Android/`](Android/) in Android Studio; Gradle restores the Android development dependencies. For Windows, use the source in [`Windows/`](Windows/) and install the .NET 8 SDK and Python 3.11 or later. The [Development guide](docs/DEVELOPMENT.md) has the setup and build commands.
+
+To propose a change, create a branch and open a pull request. The [Build workflow](.github/workflows/ci.yml) automatically builds the Android debug app and the self-contained Windows testing package. After a change is merged, a version tag starts the [Testing preview workflow](.github/workflows/release.yml), which publishes new Windows and Android downloads. See [how releases are made](docs/RELEASING.md).
+
+## See the build and release history
+
+- [Build workflow runs](https://github.com/abdelrahmanbuilds/DeskTwin/actions/workflows/ci.yml) — builds Windows and Android on pushes and pull requests.
 - [Testing preview workflow runs](https://github.com/abdelrahmanbuilds/DeskTwin/actions/workflows/release.yml) — builds the downloadable Windows ZIP and Android debug APK for version tags.
 - [Release history and downloads](https://github.com/abdelrahmanbuilds/DeskTwin/releases) — preview notes and attached files, visible before downloading.
 - [Build workflow source](.github/workflows/ci.yml) · [Release workflow source](.github/workflows/release.yml) — the complete automation definitions in this repository.

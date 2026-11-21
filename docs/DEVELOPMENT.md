@@ -6,11 +6,11 @@
 - JDK 21 and Android SDK Platform 35
 - .NET 8 SDK
 - Python 3.11 or later on PATH
-- Android Studio is optional; the checked-in Gradle wrapper can build from a terminal
+- Android Studio is recommended for Android development; the checked-in Gradle wrapper can also build from a terminal
 
 ## Android
 
-Open the Android directory in Android Studio, or run this from the repository root:
+Open the `Android/` directory in Android Studio and let Gradle sync the project, or run this from the repository root:
 
     cd Android
     ./gradlew.bat :app:assembleDebug
