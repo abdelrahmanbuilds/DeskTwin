@@ -1,0 +1,44 @@
+name: Testing preview
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Build Windows preview package
+        shell: pwsh
+        run: ./Windows/scripts/Build-Release.ps1
+      - name: Build Android testing APK
+        run: .\gradlew.bat --no-daemon :app:assembleDebug "-PandroidVersionName=$env:GITHUB_REF_NAME" "-PandroidVersionCode=$env:GITHUB_RUN_NUMBER"
+        working-directory: Android
+      - name: Stage Android testing APK
+        shell: pwsh
+        run: Copy-Item Android/app/build/outputs/apk/debug/app-debug.apk dist/DeskTwin-Android-debug.apk
+      - name: Publish testing preview
+        uses: softprops/action-gh-release@v2
+        with:
+          name: DeskTwin ${{ github.ref_name }} testing preview
+          prerelease: true
+          generate_release_notes: true
+          files: |
+            dist/DeskTwin-Windows-win-x64.zip
+            dist/DeskTwin-Android-debug.apk

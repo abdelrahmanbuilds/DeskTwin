@@ -1,0 +1,51 @@
+<Window
+    x:Class="DeskTwin.WinUI.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Microsoft.UI.Xaml.Controls"
+    >
+    <Grid x:Name="RootGrid" RequestedTheme="Dark" FlowDirection="RightToLeft" Background="#0F1724">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <Border x:Name="AppHeader" Grid.Row="0" Padding="22,16" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="0,0,0,1">
+            <Grid ColumnSpacing="16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel VerticalAlignment="Center">
+                    <TextBlock Text="DeskTwin" Style="{ThemeResource TitleTextBlockStyle}" />
+                    <TextBlock x:Name="HeaderPageTitle" Text="الرئيسية" FontSize="12" FontWeight="SemiBold" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" />
+                    <TextBlock x:Name="HeaderSubtitle" Text="ربط الكمبيوتر والهاتف بأمان" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                    <Ellipse x:Name="StatusDot" Width="9" Height="9" Fill="{ThemeResource SystemFillColorNeutralBrush}" />
+                    <TextBlock x:Name="StatusText" Text="جارٍ الاتصال بالخدمة المحلية…" VerticalAlignment="Center" />
+                    <Button x:Name="CaptureScreenshotButton" Content="لقطات كل الصفحات" Click="CaptureScreenshotButton_Click" ToolTipService.ToolTip="حفظ لقطة لكل صفحات DeskTwin فقط" />
+                    <Button x:Name="ServiceToggleButton" Content="تشغيل الخدمة" Click="ServiceToggleButton_Click" />
+                </StackPanel>
+            </Grid>
+        </Border>
+        <controls:NavigationView x:Name="Navigation" Grid.Row="1" IsBackButtonVisible="Collapsed"
+                                 IsSettingsVisible="False" PaneDisplayMode="Left" SelectionChanged="Navigation_SelectionChanged">
+            <controls:NavigationView.MenuItems>
+                <controls:NavigationViewItem Content="الرئيسية" Tag="dashboard"><controls:NavigationViewItem.Icon><SymbolIcon Symbol="Home" /></controls:NavigationViewItem.Icon></controls:NavigationViewItem>
+                <controls:NavigationViewItem Content="المجلدات" Tag="folders"><controls:NavigationViewItem.Icon><SymbolIcon Symbol="Folder" /></controls:NavigationViewItem.Icon></controls:NavigationViewItem>
+                <controls:NavigationViewItem Content="الأجهزة" Tag="devices"><controls:NavigationViewItem.Icon><SymbolIcon Symbol="CellPhone" /></controls:NavigationViewItem.Icon></controls:NavigationViewItem>
+                <controls:NavigationViewItem Content="الموافقات" Tag="approvals"><controls:NavigationViewItem.Icon><SymbolIcon Symbol="Accept" /></controls:NavigationViewItem.Icon></controls:NavigationViewItem>
+                <controls:NavigationViewItem Content="سجل النشاط" Tag="activity"><controls:NavigationViewItem.Icon><SymbolIcon Symbol="Clock" /></controls:NavigationViewItem.Icon></controls:NavigationViewItem>
+                <controls:NavigationViewItem Content="الإعدادات" Tag="settings"><controls:NavigationViewItem.Icon><SymbolIcon Symbol="Setting" /></controls:NavigationViewItem.Icon></controls:NavigationViewItem>
+                <controls:NavigationViewItem Content="الأمان" Tag="security"><controls:NavigationViewItem.Icon><SymbolIcon Symbol="Permissions" /></controls:NavigationViewItem.Icon></controls:NavigationViewItem>
+                <controls:NavigationViewItem Content="المحادثة" Tag="chat"><controls:NavigationViewItem.Icon><SymbolIcon Symbol="Message" /></controls:NavigationViewItem.Icon></controls:NavigationViewItem>
+                <controls:NavigationViewItem Content="النقل" Tag="transfers"><controls:NavigationViewItem.Icon><SymbolIcon Symbol="Sync" /></controls:NavigationViewItem.Icon></controls:NavigationViewItem>
+                <controls:NavigationViewItem Content="التكامل" Tag="integration"><controls:NavigationViewItem.Icon><SymbolIcon Symbol="Sync" /></controls:NavigationViewItem.Icon></controls:NavigationViewItem>
+                <controls:NavigationViewItem Content="ملفات الهاتف" Tag="phone_files"><controls:NavigationViewItem.Icon><SymbolIcon Symbol="OpenFile" /></controls:NavigationViewItem.Icon></controls:NavigationViewItem>
+            </controls:NavigationView.MenuItems>
+            <Frame x:Name="ContentFrame" />
+        </controls:NavigationView>
+        <TextBlock Grid.Row="2" x:Name="FooterText" Text="محلي وآمن • لا يوجد اتصال سحابي" Margin="22,8" Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
+    </Grid>
+</Window>

@@ -1,0 +1,2 @@
+# WinUI client runs the shared Python service bridge without CustomTkinter.
+-r requirements-core.txt

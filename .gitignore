@@ -1,0 +1,38 @@
+# Android / Gradle
+**/.gradle/
+**/build/
+**/local.properties
+*.hprof
+
+# .NET / Visual Studio
+**/bin/
+**/obj/
+.vs/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+
+# Local application data and diagnostics
+Windows/config/
+Windows/data/
+Windows/database/
+Windows/Python/service/database/*.db
+Windows/diagnostics/
+Windows/logs/
+Windows/tmp/
+Windows/docs/archive/
+Windows/docs/project/
+Windows/docs/architecture/
+Windows/docs/operations/
+Windows/docs/testing/
+Windows/tests/tmp*/
+
+# Local packages and archives
+dist/
+*.zip
+*.msix
+*.apk

@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- الاتصال بالـ Local API بتاع الكمبيوتر -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <!-- مطلوبة لـ mDNS/NSD Discovery على أندرويد الحديث -->
+    <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE" />
+
+    <!--
+        صلاحيات التخزين: مطلوبة عشان المستخدم يقدر يختار ملف من تخزين
+        التليفون ويرفعه للكمبيوتر، وعشان نقدر نحفظ ملف نازل من الكمبيوتر
+        بشكل دائم على مساحة التليفون (مش مجرد فتح مؤقت).
+
+        على Android 13+ (API 33+) الصلاحيات بقت مقسّمة حسب نوع الملف
+        (صور/فيديو/صوت) بدل صلاحية READ_EXTERNAL_STORAGE العامة.
+        على Android 12 وأقل، بنستخدم READ/WRITE_EXTERNAL_STORAGE التقليدية.
+        الكود بيطلب المجموعة المناسبة وقت التشغيل حسب نسخة النظام.
+    -->
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
+    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
+    <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" />
+    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" />
+    <uses-permission
+        android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="28" />
+
+    <!--
+        مطلوبة على Android 13+ (API 33+) عشان أي إشعار يظهر أصلًا - شريط
+        تقدّم الرفع/التحميل بيتعرض كإشعار نظام (زي متصفح كروم)، فمن غيرها
+        الإشعار ميظهرش خالص حتى لو الكود نفسه سليم 100%.
+    -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <application
+        android:allowBackup="false"
+        android:icon="@drawable/ic_launcher_desk_twin"
+        android:label="DeskTwin"
+        android:theme="@style/Theme.DeskTwin"
+        android:usesCleartextTraffic="false">
+        <!-- تنزيل ماسح QR مسبقًا بعد التثبيت؛ لا توجد صلاحية Camera للتطبيق. -->
+        <meta-data
+            android:name="com.google.mlkit.vision.DEPENDENCIES"
+            android:value="barcode_ui" />
+        <!--
+            usesCleartextTraffic=true ضروري هنا: بنتكلم مع الكمبيوتر عبر
+            http عادي على الشبكة المحلية (مش https) - ده مقبول ومنطقي
+            لأن الاتصال محلي بالكامل ومش عابر الإنترنت (بند: Local-first).
+        -->
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:label="DeskTwin"
+            android:configChanges="orientation|screenSize">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!--
+            FileProvider: مطلوب لفتح ملف اتحمّل مؤقتًا (من cacheDir) بتطبيق
+            آخر مناسب لنوعه (زي PDF reader أو معرض الصور)، لأن أندرويد
+            الحديث بيمنع مشاركة file:// URIs مباشرة بين التطبيقات - لازم
+            content:// URI عبر FileProvider. authorities هنا لازم يطابق
+            بالظبط الـ applicationId + ".fileprovider" في DownloadManager.kt.
+        -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+    </application>
+
+</manifest>

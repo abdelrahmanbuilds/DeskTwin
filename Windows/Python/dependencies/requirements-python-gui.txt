@@ -1,0 +1,4 @@
+# Python/CustomTkinter client plus the shared service dependencies.
+-r requirements-core.txt
+customtkinter==5.2.2
+imageio-ffmpeg>=0.6,<1
